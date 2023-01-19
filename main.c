@@ -52,6 +52,43 @@ void build_celula(celula* new){
     new->prev = NULL;
 }
 
+void frente(){
+    celula *atual, *prox;
+
+    if(cursor->cel->next == NULL)
+        return;
+    
+    atual = cursor->cel;
+    
+    prox = atual->next;
+    prox->prev = atual;
+        
+    if((atual->next)->next != NULL)
+        prox->next = atual->next->next;
+
+    cursor->cel = prox;
+    cursor->coluna++;
+}
+
+void tras(){
+    celula *atual, *anterior;
+
+    if(cursor->cel->prev == NULL)
+        return;
+    
+    atual = cursor->cel;
+    
+    anterior = atual->prev;
+    anterior->next = atual;
+        
+    if((atual->prev)->prev != NULL)
+        anterior->prev = atual->prev->prev;
+
+    cursor->cel = anterior;
+    cursor->coluna--;
+}
+
+
 void cria_celula_vazia_a_direita(){
     celula* new;
     new = (celula*) malloc(sizeof(celula));
@@ -80,8 +117,7 @@ void insert_char_a_direita(char d){
     cria_celula_vazia_a_direita();
     
     // atualiza o cursor
-	cursor->cel = (cursor->cel)->next;
-	cursor->coluna++; 
+	frente();
 	
 	// recebe o valor
     (cursor->cel)->val = d;
@@ -135,15 +171,10 @@ int parse(celula* cel, console* cons) {
 	case '!': // sair do programa 
 		return 2;
     case 'F': //move cursor pra frente
-        if((cursor->cel)->next != NULL){
-            cursor->cel = (cursor->cel)->next;
-            cursor->coluna++;
-        }
+        frente();
+        break;
     case 'T': //move cursor pra tras
-        if((cursor->cel)->prev != NULL){
-            cursor->cel = (cursor->cel)->prev;
-            cursor->coluna--;
-        }
+        tras();
         break;
     default:
         printf("Comando desconhecido\n");
@@ -174,7 +205,7 @@ int main(){
 
 	cursor->cel = cel;
 
-    int retval;imprime_coord(cursor);
+    int retval;imprime_coord();
     do {
         preenche_console(v);
         retval = parse(cel, v);

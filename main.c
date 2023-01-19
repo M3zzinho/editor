@@ -2,8 +2,24 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <math.h>
 
-#define cap_local 64
+#define cap_local 4
+
+// funcoes que podem ser empilhadas
+#define NUM_FUNCOES 6
+char lista_f[NUM_FUNCOES] = {'Z', 'I', 'D', 'F', 'T', '!'};
+
+bool check_vec(char x, int i) {
+    if (x == '\0')
+        return false;
+
+    for (int i = 0; i < NUM_FUNCOES; i++) {
+        if (lista_f[i] == x) 
+            return true;
+    }
+    return false;
+}
 
 // Funcoes associadas ao input local do usuario (que fica no console)
 typedef struct CONSOLE{
@@ -158,16 +174,6 @@ void imprime_coord(){
     printf("%d,%d>", cursor->linha, cursor->coluna);
 }
 
-int pow(int a, int b){
-    int p = 1;
-    
-    while(b > 0){
-        p = p*a; b--;
-    }
-    
-    return p;
-}
-
 int number_no_console(console* d){
     if(d->letraz[1] == '\0')
         return 1;
@@ -183,7 +189,6 @@ int number_no_console(console* d){
     } 
     return S;
 }
-
 
 int parse(celula* cel, console* cons) {
     // pega o primeiro caractere da string
@@ -228,6 +233,8 @@ int parse(celula* cel, console* cons) {
     break;
     case '!': // sair do programa
         return 2;
+    case '\0':
+        break;
     default:
     printf("Comando desconhecido\n");
     break;
@@ -239,6 +246,14 @@ int parse(celula* cel, console* cons) {
     while(tail->next != NULL)
         tail = tail->next;
     
+    // passo recursivo (executa próximas funções diferentes de 'I')
+    char x='D';
+
+    if(check_vec(cons->letraz[1], 0) == true){
+        // printf("%d",cons->letraz[1]);
+        if(c != 'I')    
+            parse(cel, aux);
+    }
     return 0;
 }
 

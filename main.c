@@ -4,9 +4,19 @@
 #include <ctype.h>
 #include <math.h>
 
-#define cap_local 4
+/* Testes:
+1 Inserir uma letra e deletá-la imediatamente
+2 Mover o cursor para frente e para trás diversas vezes
+3 Inserir várias letras e deletá-las uma a uma
+4 Tentar mover o cursor para uma posição que não existe (ex: tentar mover o cursor para uma posição antes do início da lista)
+5 Tentar inserir uma letra em uma posição inválida (ex: cursor vazio ou lista vazia)
+6 Testar a capacidade máxima do console (cap_local) e verificar se o código está lidando corretamente com essa situação
+7 Inserir caracteres especiais ou números para verificar se o código está lidando corretamente com esses casos.
+*/
 
-// funcoes que podem ser empilhadas
+#define cap_local 64
+
+// funcoes implementadas
 #define NUM_FUNCOES 6
 char lista_f[NUM_FUNCOES] = {'Z', 'I', 'D', 'F', 'T', '!'};
 
@@ -46,7 +56,12 @@ int tipo_de_cursor = 0;
 
 void build_console(console* v){
     v->tamanho = 0;
-    v->letraz = malloc(cap_local * sizeof(char));
+    v->letraz = (char*) malloc(cap_local * sizeof(char));
+
+    if(v->letraz == NULL){
+        printf("Erro ao alocar memoria para o console");
+        exit(1);
+    }
     v->letraz[cap_local - 1] = '\0';
 }
 
@@ -73,6 +88,11 @@ void build_celula(celula* new){
 
 void cria_celula_vazia_a_direita(){
     celula* new = (celula*) malloc(sizeof(celula));
+    if(new == NULL){
+        printf("Erro ao alocar memoria para a celula");
+        exit(1);
+    }
+    
     build_celula(new);
 
     if((cursor->cel)->next != NULL){
@@ -89,61 +109,88 @@ void cria_celula_vazia_a_direita(){
 }
 
 void frente(){
-    if((cursor->cel)->next == NULL)
+    if(cursor->cel == NULL){
+        printf("Erro: cursor vazio");
         return;
+    }
+
+    if(head==NULL || (cursor->cel)->next == NULL){
+        printf("Erro: nao ha celula a frente do cursor");
+        return;
+    }
     cursor->cel = (cursor->cel)->next;
     cursor->coluna++;
 }
 
 void traz(){
-    if((cursor->cel)->prev == NULL)
+    if(cursor->cel == NULL){
+        printf("Erro: cursor vazio");
         return;
-        
+    }
+    if(head == NULL || (cursor->cel)->prev == NULL){
+        printf("Erro: nao ha celula atras do cursor");
+        return;
+    }    
+
     cursor->cel = (cursor->cel)->prev;
     cursor->coluna--;
 }
 
 void insert_char_a_direita(char d){
+    // caso o cursor seja vazio
+    if(cursor->cel == NULL){
+        celula *new = (celula*) malloc(sizeof(celula));
+
+        if(new == NULL){
+            printf("Erro ao alocar memoria para a celula");
+            exit(1);
+        }
+
+        build_celula(new);
+
+        if((cursor->cel)->next != NULL){
+            // da nome a proxima celula
+            celula* b = (cursor->cel)->next;
+            b->prev = new;
+        }   
+    }
+
     // celula a direita do cursor
-    cria_celula_vazia_a_direita();
+    cria_celula_vazia_a_direita();frente();
 
-    // atualiza o cursor
-    frente();
-
-    // recebe o valor
     (cursor->cel)->val = d;
 }
 
 void delete_char(){
-    celula *atual; atual=cursor->cel;
+    // verifica se o cursor e a lista estao vazios
+    if(cursor == NULL || head == NULL){
+        printf("Erro: cursor ou lista estao vazios");
+        return;
+    }
+    celula *atual; atual = cursor->cel;
     celula *anterior, *proxima;
-    
-    anterior=atual; proxima=atual;
-    
-    if(atual == tail)
+
+    // verifica se a celula atual e a head
+    if(atual == head){
+        head = head->next;
+        if(head != NULL) head->prev = NULL;
+    }
+    // verifica se a celula atual e a tail
+    else if(atual == tail){
         tail = tail->prev;
-    if(atual->prev != NULL)
+        if(tail != NULL) tail->next = NULL;
+    }
+    // caso contrario, atualiza as celulas anterior e proxima
+    else{
         anterior = atual->prev;
-    if(atual->next != NULL)
-        proxima  = atual->next;
+        proxima = atual->next;
+        anterior->next = proxima;
+        proxima->prev = anterior;
+    }
 
-    free(atual);  
-    
-    if(proxima == NULL)
-        proxima = tail;
-    if(anterior == NULL)
-        anterior = head;
-        
-    atual = anterior;
-    atual->prev = anterior->prev;
-    atual->next = proxima;
-    
-    proxima->prev = atual;
-    
-    // if(atual == head)
-
-    cursor->cel = atual;
-    cursor->coluna--;
+    // move o cursor para a celula anterior
+    traz();
+    free(atual);
 }
 
 void printa_celula(){
@@ -211,7 +258,8 @@ int parse(celula* cel, console* cons) {
 	    from_console_to_line(aux);
 	    break;
     case 'D':
-        delete_char();
+        if((cursor->cel) != head))
+            delete_char();
     case 'F': //move cursor pra frente
     iteradas = 
       number_no_console(cons);

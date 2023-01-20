@@ -250,35 +250,35 @@ int parse(celula* cel, console* cons) {
     case 'Z':
         tipo_de_cursor= (tipo_de_cursor+1) % 2; 
     case 'I':
-    // lista de celulas auxiliar removendo a cabeca
-    aux->tamanho = n - 1;
-    for(int i=0; i< n-1; i++)
-        aux->letraz[i] = cons->letraz[i+1];
+        // lista de celulas auxiliar removendo a cabeca
+        aux->tamanho = n - 1;
+        for(int i=0; i< n-1; i++)
+            aux->letraz[i] = cons->letraz[i+1];
 
 	    from_console_to_line(aux);
 	    break;
     case 'D':
-        if((cursor->cel) != head))
+        if(cursor->cel != head)
             delete_char();
     case 'F': //move cursor pra frente
-    iteradas = 
-      number_no_console(cons);
-    while(iteradas > 0){ 
-        if((cursor->cel)->next != NULL)
-            frente();
-        iteradas--;
-    }
+        iteradas = 
+          number_no_console(cons);
+        while(iteradas > 0){ 
+            if((cursor->cel)->next != NULL)
+                frente();
+            iteradas--;
+        }
 	    break;
     case 'T': //move cursor pra traz
-    iteradas = 
-      number_no_console(cons);
-    
-    while(iteradas > 0){ 
-        if((cursor->cel)->prev != NULL)
-            traz();
-        iteradas--;
-    }
-    break;
+        iteradas = 
+          number_no_console(cons);
+        
+        while(iteradas > 0){ 
+            if((cursor->cel)->prev != NULL)
+                traz();
+            iteradas--;
+        }
+        break;
     case '!': // sair do programa
         return 2;
     case '\0':
@@ -295,8 +295,6 @@ int parse(celula* cel, console* cons) {
         tail = tail->next;
     
     // passo recursivo (executa próximas funções diferentes de 'I')
-    char x='D';
-
     if(check_vec(cons->letraz[1], 0) == true){
         // printf("%d",cons->letraz[1]);
         if(c != 'I')    

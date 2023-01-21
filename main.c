@@ -3,16 +3,6 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <math.h>
-/* Testes:
-1 Inserir uma letra e deletá-la imediatamente
-2 Mover o cursor para frente e para trás diversas vezes
-3 Inserir várias letras e deletá-las uma a uma
-4 Tentar mover o cursor para uma posição que não existe (ex: tentar mover o cursor para uma posição antes do início da lista)
-5 Tentar inserir uma letra em uma posição inválida (ex: cursor vazio ou lista vazia)
-6 Testar a capacidade máxima do console (cap_local) e verificar se o código está lidando corretamente com essa situação
-7 Inserir caracteres especiais ou números para verificar se o código está lidando corretamente com esses casos.
-*/
-
 
 // Funcao para limpar a tela 
 /*****************************/
@@ -75,8 +65,10 @@ void ClearScreen(){
 #define cap_local 64
 
 // funcoes implementadas
-#define NUM_FUNCOES 6
-char lista_f[NUM_FUNCOES] = {'G', 'I', 'D', 'F', 'T', '!'};
+#define NUM_FUNCOES 13
+char lista_f[NUM_FUNCOES] = {
+    'G', 'I', 'D', 'F', 'T','C','V','X',
+    'O', '$', 'P', 'Q', '!'};
 
 bool check_vec(char x, int i) {
     if (x == '\0')
@@ -96,22 +88,24 @@ typedef struct CONSOLE{
     int tamanho;
 } console;
 
-typedef struct PONTO{
-    int linha;
-    int coluna;
-    struct CELULA* cel;
-} ponto;
-
 typedef struct CELULA{
     char val;
     struct CELULA* next;
     struct CELULA* prev;
 } celula;
 
+typedef struct PONTO{
+    int linha;
+    int coluna;
+    struct CELULA* cel;
+} ponto;
+
 ponto *cursor;
-celula *head, *tail;
+celula *head, *tail, *ctrl_c, *ctrl_x;
 
 int tipo_de_cursor = 0;
+
+int ctrl_c_coluna = 0;
 
 // Funcoes do console
 /*****************************/
@@ -183,12 +177,12 @@ void cria_celula_vazia_a_direita(){
 
 void frente(){
     if(cursor->cel == NULL){
-        printf("Erro: cursor vazio");
+        printf("Erro: cursor vazio\n");
         return;
     }
 
     if(head==NULL || (cursor->cel)->next == NULL){
-        printf("Erro: nao ha celula a frente do cursor");
+        printf("Erro: nao ha celula a frente do cursor\n");
         return;
     }
     cursor->cel = (cursor->cel)->next;
@@ -197,11 +191,11 @@ void frente(){
 
 void traz(){
     if(cursor->cel == NULL){
-        printf("Erro: cursor vazio");
+        printf("Erro: cursor vazio\n");
         return;
     }
     if(head == NULL || (cursor->cel)->prev == NULL){
-        printf("Erro: nao ha celula atras do cursor");
+        printf("Erro: nao ha celula atras do cursor\n");
         return;
     }    
 
@@ -324,6 +318,46 @@ void move_cursor_prev_palavra(){
             traz();
 }
 
+int copia_memoria(){
+    if(cursor->cel == NULL)
+        return 0;
+    ctrl_c = cursor->cel;
+    return cursor->coluna;
+}
+
+void cola_memoria(){
+    if(ctrl_c == NULL)
+        return;
+    insert_char_a_direita(ctrl_c->val);
+}
+
+void recorta_memoria(){
+    if(cursor->cel == NULL)
+        return;
+
+    celula *atual = cursor->cel;
+    int atual_coluna = cursor->coluna;
+
+    if(ctrl_c == NULL)
+        return;
+    // aponta o cursor pra poder deletar
+    cursor->cel = ctrl_c;
+    char d = cursor->cel->val;
+
+    delete_char();
+
+    cursor->cel = atual;
+    
+    // atualiza a coluna do cursor (cuidando pro 
+    // caso da exclusao estar antes ou depois do 
+    // cursor)
+    cursor->coluna = atual_coluna;
+    if(atual_coluna > ctrl_c_coluna)
+        cursor->coluna--;
+
+    insert_char_a_direita(d);
+}
+
 int parse(celula* cel, console* cons) {
     ClearScreen();
 
@@ -331,7 +365,7 @@ int parse(celula* cel, console* cons) {
     char c = cons->letraz[0];
 
     int n = cons->tamanho;
-    
+
     // numero de iteracoes de uma dada funcao
     int iteradas = number_no_console(cons);
 
@@ -401,6 +435,15 @@ int parse(celula* cel, console* cons) {
                 iteradas--;
             }
             break;    
+        case 'C':
+            ctrl_c_coluna = copia_memoria();
+            break;
+        case 'V':
+            cola_memoria();
+            break;
+        case 'X':
+            recorta_memoria();
+            break;
         case '!': // sair do programa
             return 2;
         case '\0':
@@ -425,9 +468,8 @@ int parse(celula* cel, console* cons) {
         free(aux);
         return 0;
     }
-    if(c != 'I'){
+    if(c != 'I')
         parse(cel, aux);
-    }
     if(aux != NULL)
         free(aux);
     return 0;

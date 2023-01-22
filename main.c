@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <math.h>
+#include <locale.h>
 
 // Funcao para limpar a tela 
 /*****************************/
@@ -65,12 +66,12 @@ void ClearScreen(){
 #define cap_local 64
 
 // funcoes implementadas
-#define NUM_FUNCOES 13
+#define NUM_FUNCOES 14
 char lista_f[NUM_FUNCOES] = {
-    'G', 'I', 'D', 'F', 'T','C','V','X',
-    'O', '$', 'P', 'Q', '!'};
+    'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
+    'O', '$', 'P', 'Q', '!', 'B'};
 
-bool check_vec(char x, int i) {
+bool check_vec(char x) {
     if (x == '\0')
         return false;
 
@@ -94,6 +95,15 @@ typedef struct CELULA{
     struct CELULA* prev;
 } celula;
 
+typedef struct LINHA{
+    int tamanho;
+    struct CELULA* head;
+    struct CELULA* tail;
+    struct LINHA* up;
+    struct LINHA* down;
+} linha;
+
+
 typedef struct PONTO{
     int linha;
     int coluna;
@@ -102,6 +112,8 @@ typedef struct PONTO{
 
 ponto *cursor;
 celula *head, *tail, *ctrl_c, *ctrl_x;
+linha* pres_line;
+
 
 int tipo_de_cursor = 0;
 
@@ -153,10 +165,18 @@ void build_celula(celula* new){
     new->prev = NULL;
 }
 
+void build_linha(linha* new){
+    new->tamanho = 0;
+    new->head = NULL;
+    new->tail = NULL;
+    new->up = NULL;
+    new->down = NULL;
+}
+
 void cria_celula_vazia_a_direita(){
     celula* new = (celula*) malloc(sizeof(celula));
     if(new == NULL){
-        printf("Erro ao alocar memoria para a celula");
+        printf("Erro ao alocar memoria para a celula\n");
         exit(1);
     }
     
@@ -223,9 +243,11 @@ void insert_char_a_direita(char d){
     }
 
     // celula a direita do cursor
-    cria_celula_vazia_a_direita();frente();
+    cria_celula_vazia_a_direita();
+    frente();
 
     (cursor->cel)->val = d;
+    pres_line->tamanho++;
 }
 
 void delete_char(){
@@ -262,7 +284,7 @@ void delete_char(){
 
 void printa_celula(){
     printf(" ");
-    celula* aux = head->next;
+    celula* aux = pres_line->head->next;
     while(aux != NULL){
         printf("%c", aux->val);
         aux = aux->next;
@@ -272,7 +294,7 @@ void printa_celula(){
 
 void from_console_to_line(console* cons){
     for(int i=0; i < cons->tamanho; i++)
-	       insert_char_a_direita(cons->letraz[i]);
+	    insert_char_a_direita(cons->letraz[i]);
 }
 
 void imprime_cursor(){
@@ -358,13 +380,120 @@ void recorta_memoria(){
     insert_char_a_direita(d);
 }
 
-int parse(celula* cel, console* cons) {
+int tamanho_da_linha(){
+    int n = 0;
+    celula* aux = head->next;
+    while(aux != NULL){
+        n++;
+        aux = aux->next;
+    }
+    return n;
+}
+
+char* line_to_string(){
+    int n = tamanho_da_linha();
+    char* str = (char*) malloc(n*sizeof(char));
+    celula* aux = head->next;
+    for(int i=0; i<n; i++){
+        str[i] = aux->val;
+        aux = aux->next;
+    }
+    return str;
+}
+
+// Implementando o algoritimo de Knuth Morris Pratt 
+void KMP_prefixo(char* padrao, int M, int* prefixos) {
+    prefixos[0] = 0;
+    int j = 0, i=1;
+    
+    // percorre o padrao
+    while(i < M){
+        if(padrao[i] == padrao[j]){
+            j++;
+            prefixos[i] = j;
+            i++;
+        } else {
+            if(j != 0)
+                j = prefixos[j-1];
+            else{
+                prefixos[i] = 0;
+                i++;
+            }
+        }
+    }
+
+    // // printa prefixos
+    // for(int i=0; i<M; i++)
+    //     printf("prefixos[%d] = %d\n", i, prefixos[i]);
+}
+
+int KMP_busca(console* cons){
+    int M = cons->tamanho;
+    int N = pres_line->tamanho - cursor->coluna;
+    char padrao[M];
+
+    for(int i=0; i<M; i++)
+        padrao[i] = cons->letraz[i];
+
+    int prefixos[M];
+
+    // calcula o prefixo e o sufixo do padrao
+    KMP_prefixo(padrao, M, prefixos);
+
+    int j=0, i=0;
+    // "texto[i]"
+    celula* texto_i = cursor->cel;
+
+    while(i < N){
+        if(padrao[j] == texto_i->val){
+            j++;i++;
+            texto_i = texto_i->next;
+        }
+
+        if(j == M)
+            return i-j;
+        else if(i < N && padrao[j] != texto_i->val){
+            if(j != 0)
+                j = prefixos[j-1];
+            else{
+                i++; texto_i = texto_i->next;
+            }
+        }
+    }
+    
+    return -1;
+}
+
+void mecanismo_de_busca(console *cons_input){
+    int ind_kmp = KMP_busca(cons_input);
+
+    if(ind_kmp == -1)
+        return;
+        
+    // anda ate o indice encontrado pelo metodo
+    while(ind_kmp > 0){
+        frente();
+        ind_kmp--;
+    }
+}
+
+int parse(console* cons){
     ClearScreen();
 
     // pega o primeiro caractere da string
     char c = cons->letraz[0];
+    console *cons_input;
 
-    int n = cons->tamanho;
+    // lista de celulas auxiliar removendo a cabeca para funcoes que usam strings do usuario
+    // > Input: 𝑓a₀a₁...aₙ
+    // > Output: a₀a₁...aₙ
+    if(cons->tamanho > 1){
+        cons_input = malloc(sizeof(console));
+        build_console(cons_input);
+        cons_input->tamanho = cons->tamanho - 1;
+        for(int i=0; i< cons_input->tamanho; i++)
+            cons_input->letraz[i] = cons->letraz[i+1];
+    }
 
     // numero de iteracoes de uma dada funcao
     int iteradas = number_no_console(cons);
@@ -372,32 +501,40 @@ int parse(celula* cel, console* cons) {
     // uma vez que o numero de iteradas da funcao ja esta aramazenado, removemos ele do console
     int j=0;
     while(isdigit(cons->letraz[j+1])){
-        delete_char_console(cons, j+1);
-        j++;
+        delete_char_console(cons, j+1); j++;
     }
 
     if(iteradas == 0)
         iteradas = 1;
-    
-    // lista de celulas auxiliar removendo a cabeca
-    console *aux = malloc(sizeof(console));
-    build_console(aux);
-    aux->tamanho = n - 1;
-    for(int i=0; i< n-1; i++)
-        aux->letraz[i] = cons->letraz[i+1];
 
-    switch (c) {
-        case 'G':
-            tipo_de_cursor= (tipo_de_cursor+1) % 2; 
+    bool search_next = false; char s;
+
+    switch(c){
         case 'I':
-            from_console_to_line(aux);
+            if(cons_input != NULL)
+                from_console_to_line(cons_input);
             break;
-        case 'D':
-            while(iteradas > 0){ 
-                if(cursor->cel != head)
-                    delete_char();
-                iteradas--;
-            }
+        case 'B':
+            // primeiro caso comeca a busca a partir do inicio da linha
+            cursor->cel = pres_line->head;
+            cursor->coluna = 0;
+            
+            // do-while executa pelo menos uma vez a busca
+            do {
+                mecanismo_de_busca(cons_input); 
+                printa_celula();
+                imprime_cursor();
+                imprime_coord();
+                printf("\n\n");
+                
+                printf("Continuar busca? (s/n) ");
+                s = getchar();
+                if(s == 's')
+                    search_next = true;
+                else
+                    search_next = false;
+                printf("\n");
+            } while(search_next == true);
             break;
         case 'F': //move cursor pra frente
             while(iteradas > 0){ 
@@ -414,14 +551,16 @@ int parse(celula* cel, console* cons) {
             }
             break;
         case 'O':
-            if(cursor->cel != head){
-                cursor->cel = head;
+            if(cursor->cel != pres_line->head){
+                cursor->cel = pres_line->head;
                 cursor->coluna = 0;
             }
             break;
         case '$':
-            while(cursor->cel != tail)
-                frente();
+            if(cursor->cel != pres_line->tail){
+                cursor->cel = pres_line->tail;
+                cursor->coluna = pres_line->tamanho;
+            }
             break;
         case 'P':
             while(iteradas > 0){ 
@@ -434,7 +573,7 @@ int parse(celula* cel, console* cons) {
                 move_cursor_prev_palavra();
                 iteradas--;
             }
-            break;    
+            break;
         case 'C':
             ctrl_c_coluna = copia_memoria();
             break;
@@ -452,45 +591,62 @@ int parse(celula* cel, console* cons) {
             printf("Comando desconhecido\n");
             break;
     }
-    printa_celula();
-    imprime_cursor();
-    imprime_coord();
-    
-    while(tail->next != NULL)
-        tail = tail->next;
+    if(c != 'B'){ // se for busca, ja imprimiu uma vez
+        printa_celula();
+        imprime_cursor();
+        imprime_coord();
+    }
+
+    while(pres_line->tail->next != NULL)
+        pres_line->tail = pres_line->tail->next;
     
     // passo recursivo: casos expurios
-    if(check_vec(cons->letraz[1], 0) == false){
-        free(aux);
-        return 0;
+    if(cons->tamanho > 1){
+        if(check_vec(cons->letraz[1]) == false){
+            free(cons_input);
+            return 0;
+        }
+        if(cons_input->tamanho == 0){
+            free(cons_input);
+            return 0;
+        }
+        if(c != 'I' || c != 'B' || c != 'S')
+            parse(cons_input);
+        if(cons_input != NULL)
+            free(cons_input);
     }
-    if(aux->tamanho == 0){
-        free(aux);
-        return 0;
-    }
-    if(c != 'I')
-        parse(cel, aux);
-    if(aux != NULL)
-        free(aux);
     return 0;
 }
 
 int main(){
+    // possibilita usar caracteres
+    setlocale(LC_ALL, "pt_BR.UTF-8");
+    freopen("CON","w",stdout);
+
     // cursor = (x,y) da coordenada cursor
     cursor = (ponto*) malloc(sizeof(ponto));
     cursor->linha = 0; cursor->coluna = 0;
 
-    // celula original
-    celula* cel;
-    cel = (celula*) malloc(sizeof(celula));
-    build_celula(cel);
+    // linha original
+    pres_line = (linha*) malloc(sizeof(linha));
+    build_linha(pres_line);
 
     console* v;
     v = (console*) malloc(sizeof(console));
     build_console(v);
 
+    head = (celula*) malloc(sizeof(celula));
+    tail = (celula*) malloc(sizeof(celula));
+
+    celula* cel;
+    cel = (celula*) malloc(sizeof(celula));
+    build_celula(cel);
+
     head = cel;
     tail = cel;
+
+    pres_line->head = head;
+    pres_line->tail = tail;
 
     cursor->cel = cel;
 
@@ -498,7 +654,9 @@ int main(){
     imprime_coord();
     do {
         preenche_console(v);
-        retval = parse(cel, v);
+        if(v->tamanho == 0)
+            ClearScreen();
+        retval = parse(v);
         reseta_console(v);
     } while (retval != 2);
 

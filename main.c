@@ -5,11 +5,10 @@
 #include <math.h>
 #include <locale.h>
 
-// Funcao para limpar a tela 
-/*****************************/
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
 void ClearScreen(){
   HANDLE                     hStdOut;
   CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -61,7 +60,6 @@ void ClearScreen(){
    putp( tigetstr( "clear" ) );
 }
 #endif
-/*****************************/
 
 #define cap_local 64
 
@@ -252,25 +250,23 @@ void insert_char_a_direita(char d){
 
 void delete_char(){
     // verifica se o cursor e a lista estao vazios
-    if(cursor == NULL || head == NULL){
+    if(cursor == NULL || pres_line->head == NULL){
         printf("Erro: cursor ou lista estao vazios");
         return;
     }
     celula *atual; atual = cursor->cel;
     celula *anterior, *proxima;
 
-    // verifica se a celula atual e a head
-    if(atual == head){
-        head = head->next;
-        if(head != NULL) head->prev = NULL;
-    }
-    // verifica se a celula atual e a tail
-    else if(atual == tail){
-        tail = tail->prev;
-        if(tail != NULL) tail->next = NULL;
-    }
-    // caso contrario, atualiza as celulas anterior e proxima
-    else{
+    // verificar extremidades
+    if(atual == pres_line->head){
+        pres_line->head = pres_line->head->next;
+        if(pres_line->head != NULL) 
+            pres_line->head->prev = NULL;
+    } else if(atual == pres_line->tail){
+        pres_line->tail = pres_line->tail->prev;
+        if(pres_line->tail != NULL) 
+            pres_line->tail->next = NULL;
+    } else{ // caso contrario, atualiza as celulas anterior e proxima
         anterior = atual->prev;
         proxima = atual->next;
         anterior->next = proxima;
@@ -507,34 +503,55 @@ int parse(console* cons){
     if(iteradas == 0)
         iteradas = 1;
 
-    bool search_next = false; char s;
+    char s; bool search_next=true;
 
     switch(c){
+        case 'G':
+            tipo_de_cursor = (tipo_de_cursor + 1)% 2;
+            break;
         case 'I':
             if(cons_input != NULL)
                 from_console_to_line(cons_input);
+            break;
+        case 'D':
+            while(iteradas > 0){ 
+                delete_char();
+                iteradas--;
+            }
             break;
         case 'B':
             // primeiro caso comeca a busca a partir do inicio da linha
             cursor->cel = pres_line->head;
             cursor->coluna = 0;
             
-            // do-while executa pelo menos uma vez a busca
-            do {
+            while(search_next == true){
+                ClearScreen();
+
                 mecanismo_de_busca(cons_input); 
+
                 printa_celula();
                 imprime_cursor();
                 imprime_coord();
                 printf("\n\n");
                 
-                printf("Continuar busca? (s/n) ");
-                s = getchar();
-                if(s == 's')
-                    search_next = true;
-                else
+                if(cursor->cel->next == NULL){
                     search_next = false;
+                    break;
+                }
+
+                frente(); 
+                printf("Continuar busca? (s/n) ");
+                fflush(stdin); // limpa o buffer de entrada
+                scanf("%c", &s);
+                int d;
+                while ((d = getchar()) != '\n' && d != EOF);
                 printf("\n");
-            } while(search_next == true);
+
+                if(s == 'n'){
+                    traz();
+                    search_next = false;
+                }
+            }
             break;
         case 'F': //move cursor pra frente
             while(iteradas > 0){ 
@@ -591,12 +608,11 @@ int parse(console* cons){
             printf("Comando desconhecido\n");
             break;
     }
-    if(c != 'B'){ // se for busca, ja imprimiu uma vez
-        printa_celula();
-        imprime_cursor();
-        imprime_coord();
-    }
-
+    
+    printa_celula();
+    imprime_cursor();
+    imprime_coord();
+    
     while(pres_line->tail->next != NULL)
         pres_line->tail = pres_line->tail->next;
     

@@ -505,6 +505,7 @@ int parse(console* cons){
 
     char s; bool search_next=true;
 
+    if(isdigit(c)==false){
     switch(c){
         case 'G':
             tipo_de_cursor = (tipo_de_cursor + 1)% 2;
@@ -608,7 +609,7 @@ int parse(console* cons){
             printf("Comando desconhecido\n");
             break;
     }
-    
+    }
     printa_celula();
     imprime_cursor();
     imprime_coord();

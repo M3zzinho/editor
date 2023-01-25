@@ -64,10 +64,10 @@ void ClearScreen(){
 #define cap_local 64
 
 // funcoes implementadas
-#define NUM_FUNCOES 14
+#define NUM_FUNCOES 15
 char lista_f[NUM_FUNCOES] = {
     'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
-    'O', '$', 'P', 'Q', '!', 'B'};
+    'O', '$', 'P', 'Q', '!', 'B', 'N'};
 
 bool check_vec(char x) {
     if (x == '\0')
@@ -83,7 +83,7 @@ bool check_vec(char x) {
 // Variaveis globais
 /*****************************/
 typedef struct CONSOLE{
-    char *letraz;
+    char *lecursor_traz;
     int tamanho;
 } console;
 
@@ -101,7 +101,6 @@ typedef struct LINHA{
     struct LINHA* down;
 } linha;
 
-
 typedef struct PONTO{
     int linha;
     int coluna;
@@ -110,7 +109,7 @@ typedef struct PONTO{
 
 ponto *cursor;
 celula *head, *tail, *ctrl_c, *ctrl_x;
-linha* pres_line;
+linha* pres_line, *head_line, *tail_line;
 
 
 int tipo_de_cursor = 0;
@@ -121,27 +120,27 @@ int ctrl_c_coluna = 0;
 /*****************************/
 void build_console(console* v){
     v->tamanho = 0;
-    v->letraz = (char*) malloc(cap_local * sizeof(char));
+    v->lecursor_traz = (char*) malloc(cap_local * sizeof(char));
 
-    if(v->letraz == NULL){
+    if(v->lecursor_traz == NULL){
         printf("Erro ao alocar memoria para o console");
         exit(1);
     }
-    v->letraz[cap_local - 1] = '\0';
+    v->lecursor_traz[cap_local - 1] = '\0';
 }
 
 void preenche_console(console* v){
     char c; int i = 0;
 
     while ((c = getchar()) != 10) {
-        v->letraz[i] = c;
+        v->lecursor_traz[i] = c;
         i++;
     }
     v->tamanho = i;
 }
 
 void reseta_console(console* v){
-    v->letraz[v->tamanho] = '\0';
+    v->lecursor_traz[v->tamanho] = '\0';
     v->tamanho = 0;
 }
 
@@ -150,7 +149,7 @@ void delete_char_console(console* cons, int i) {
         return;
 
     for (int j = i; j < cons->tamanho - 1; j++)
-        cons->letraz[j] = cons->letraz[j + 1];
+        cons->lecursor_traz[j] = cons->lecursor_traz[j + 1];
 
     cons->tamanho--;
 }
@@ -179,46 +178,99 @@ void cria_celula_vazia_a_direita(){
     }
     
     build_celula(new);
-
+    
     if((cursor->cel)->next != NULL){
         // da nome a proxima celula
-        celula* b = (cursor->cel)->next;
+        celula* right = (cursor->cel)->next;
         (cursor->cel)->next = new;
         new->prev = cursor->cel;
-        new->next = b;
-        b->prev = new;
+        new->next = right;
+        right->prev = new;
     } else {
         (cursor->cel)->next = new;
         new->prev = cursor->cel;
     }
 }
 
-void frente(){
+// movimentos do cursor
+void cursor_frente(){
     if(cursor->cel == NULL){
         printf("Erro: cursor vazio\n");
         return;
     }
 
-    if(head==NULL || (cursor->cel)->next == NULL){
-        printf("Erro: nao ha celula a frente do cursor\n");
+    if(pres_line->head==NULL || (cursor->cel)->next == NULL)
         return;
-    }
+
     cursor->cel = (cursor->cel)->next;
     cursor->coluna++;
 }
 
-void traz(){
+void cursor_traz(){
     if(cursor->cel == NULL){
         printf("Erro: cursor vazio\n");
         return;
     }
-    if(head == NULL || (cursor->cel)->prev == NULL){
-        printf("Erro: nao ha celula atras do cursor\n");
-        return;
-    }    
+    if(pres_line->head == NULL || 
+        (cursor->cel)->prev == NULL)
+        return;    
 
     cursor->cel = (cursor->cel)->prev;
     cursor->coluna--;
+}
+
+void cursor_baixo(){
+    if(cursor->cel == NULL){
+        printf("Erro: cursor vazio\n");
+        return;
+    }
+    if(pres_line->down == NULL)
+        return; 
+
+    linha* old_atual = pres_line;
+    linha* old_baixo = pres_line->down;
+    
+    pres_line = old_baixo;
+    pres_line->up = old_atual;
+    old_atual->down = pres_line;
+    
+    // coloca o cursor na primeira celula da linha
+    cursor->cel = pres_line->head;
+    cursor->linha++;
+
+    int old_coluna = cursor->coluna;
+    cursor->coluna = 0;
+
+    cria_celula_vazia_a_direita();
+    celula* aux = cursor->cel;
+
+    if(aux == NULL)
+        printf("old_coluna: %d", old_coluna);
+
+    while(aux->next != NULL && old_coluna > 0){
+        aux = aux->next;
+        cursor_frente();
+        old_coluna--;
+    }
+}
+
+void cursor_cima(){
+    if(cursor->cel == NULL){
+        printf("Erro: cursor vazio\n");
+        return;
+    }
+    if(pres_line->up == NULL)
+        return; 
+
+    linha* old_atual = pres_line;
+    linha* old_cima = pres_line->up;
+    
+    pres_line = old_cima;
+    pres_line->down = old_atual;
+    old_atual->up = pres_line;
+    
+    cursor->cel = pres_line->head;
+    cursor->linha--;
 }
 
 void insert_char_a_direita(char d){
@@ -227,7 +279,7 @@ void insert_char_a_direita(char d){
         celula *new = (celula*) malloc(sizeof(celula));
 
         if(new == NULL){
-            printf("Erro ao alocar memoria para a celula");
+            printf("Erro ao alocar memoria para a celula\n");
             exit(1);
         }
 
@@ -242,10 +294,60 @@ void insert_char_a_direita(char d){
 
     // celula a direita do cursor
     cria_celula_vazia_a_direita();
-    frente();
+    cursor_frente();
 
     (cursor->cel)->val = d;
     pres_line->tamanho++;
+}
+
+void insert_line_em_baixo(){
+    linha* new;
+    new = (linha*) malloc(sizeof(linha));
+        
+    if(new == NULL){
+        printf("Erro ao alocar memoria para a linha\n");
+        exit(1);
+    }
+
+    build_linha(new);
+
+    if(pres_line->down != NULL){
+        linha* below = pres_line->down;
+        pres_line->down = new;
+        new->up = pres_line;
+        new->down = below;
+        below->up = new;
+    } else {
+        pres_line->down = new;
+        new->up = pres_line;
+    }
+
+    cursor_baixo();
+}
+
+void insert_line_em_cima(){
+    linha* new;
+    new = (linha*) malloc(sizeof(linha));
+        
+    if(new == NULL){
+        printf("Erro ao alocar memoria para a linha\n");
+        exit(1);
+    }
+
+    build_linha(new);
+
+    if(pres_line->up != NULL){
+        linha* above = pres_line->up;
+        pres_line->up = new;
+        new->down = pres_line;
+        new->up = above;
+        above->down = new;
+    } else {
+        pres_line->up = new;
+        new->down = pres_line;
+    }
+
+    cursor_cima();
 }
 
 void delete_char(){
@@ -274,14 +376,20 @@ void delete_char(){
     }
 
     // move o cursor para a celula anterior
-    traz();
+    cursor_traz();
+    pres_line->tamanho--;
     free(atual);
 }
 
-void printa_celula(){
-    printf(" ");
-    celula* aux = pres_line->head->next;
-    while(aux != NULL){
+void print_line(){
+    celula* aux = pres_line->head;
+        
+    if(aux == NULL){
+        printf("\n"); return;
+    }
+    if(aux->next != NULL)
+        aux = aux->next;
+    while(aux != NULL){        
         printf("%c", aux->val);
         aux = aux->next;
     }
@@ -290,7 +398,7 @@ void printa_celula(){
 
 void from_console_to_line(console* cons){
     for(int i=0; i < cons->tamanho; i++)
-	    insert_char_a_direita(cons->letraz[i]);
+	    insert_char_a_direita(cons->lecursor_traz[i]);
 }
 
 void imprime_cursor(){
@@ -307,14 +415,14 @@ void imprime_coord(){
 }
 
 int number_no_console(console* d){
-    if(d->letraz[1] == '\0' || d->tamanho == 1)
+    if(d->lecursor_traz[1] == '\0' || d->tamanho == 1)
         return 1;
     
     int S = 0;
     int n = d->tamanho;
     
     for(int i=1; i<n; i++){
-        char x=d->letraz[n-i];
+        char x=d->lecursor_traz[n-i];
         if(isdigit(x)==0)
             break;
         S = pow(10,i-1)*(x-'0') + S;
@@ -326,14 +434,14 @@ void move_cursor_next_palavra(){
     while(cursor->cel != NULL && 
           cursor->cel->val != ' ')
         if(cursor->cel->next != NULL)
-            frente();
+            cursor_frente();
 }
 
 void move_cursor_prev_palavra(){
     while(cursor->cel != NULL && 
           cursor->cel->val != ' ')
         if(cursor->cel->prev != NULL)
-            traz();
+            cursor_traz();
 }
 
 int copia_memoria(){
@@ -429,7 +537,7 @@ int KMP_busca(console* cons){
     char padrao[M];
 
     for(int i=0; i<M; i++)
-        padrao[i] = cons->letraz[i];
+        padrao[i] = cons->lecursor_traz[i];
 
     int prefixos[M];
 
@@ -468,14 +576,29 @@ bool mecanismo_de_busca(console *cons_input){
     
     // anda ate o indice encontrado pelo metodo
     while(ind_kmp > 0){
-        frente();
+        cursor_frente();
         ind_kmp--;
     }
     return true;
 }
 
+void print_all_lines(){
+    linha* aux = head_line;
+    int n = 0;
+    while(aux != NULL){
+        if(n == cursor->linha)
+            printf(">");
+        else
+            printf(" ");
+        
+        print_line(aux);
+        aux = aux->down;
+        n++;
+    }
+}
+
 void full_print(){
-    printa_celula();
+    print_all_lines();
     imprime_cursor();
     imprime_coord();
 }
@@ -484,7 +607,7 @@ int parse(console* cons){
     ClearScreen();
 
     // pega o primeiro caractere da string
-    char c = cons->letraz[0];
+    char c = cons->lecursor_traz[0];
     console *cons_input;
 
     // lista de celulas auxiliar removendo a cabeca para funcoes que usam strings do usuario
@@ -495,7 +618,7 @@ int parse(console* cons){
         build_console(cons_input);
         cons_input->tamanho = cons->tamanho - 1;
         for(int i=0; i< cons_input->tamanho; i++)
-            cons_input->letraz[i] = cons->letraz[i+1];
+            cons_input->lecursor_traz[i] = cons->lecursor_traz[i+1];
     } else 
         cons_input = NULL;
 
@@ -504,7 +627,7 @@ int parse(console* cons){
 
     // uma vez que o numero de iteradas da funcao ja esta aramazenado, removemos ele do console
     int j=0;
-    while(isdigit(cons->letraz[j+1])){
+    while(isdigit(cons->lecursor_traz[j+1])){
         delete_char_console(cons, j+1); j++;
     }
 
@@ -517,6 +640,9 @@ int parse(console* cons){
     switch(c){
         case 'G':
             tipo_de_cursor = (tipo_de_cursor + 1)% 2;
+            break;
+        case 'N':
+            insert_line_em_baixo();
             break;
         case 'I':
             if(cons_input != NULL)
@@ -541,14 +667,14 @@ int parse(console* cons){
                 if(cursor->cel->next == NULL){
                     // lidar com caso da ultima celula
                     if(cursor->cel->val != 
-                    cons_input->letraz[0])
-                        traz();
+                    cons_input->lecursor_traz[0])
+                        cursor_traz();
 
                     search_next = false;break;
                 }
 
                 if(search_next == false){
-                    traz();break;
+                    cursor_traz();break;
                 }
 
                 full_print();
@@ -565,20 +691,20 @@ int parse(console* cons){
                     search_next = false;
 
                 if(s == 's' && cursor->cel->next != NULL)
-                    frente();
+                    cursor_frente();
             }
             break;
-        case 'F': //move cursor pra frente
+        case 'F': //move cursor pra cursor_frente
             while(iteradas > 0){ 
                 if((cursor->cel)->next != NULL)
-                    frente();
+                    cursor_frente();
                 iteradas--;
             }
             break;
-        case 'T': //move cursor pra traz
+        case 'T': //move cursor pra cursor_traz
             while(iteradas > 0){ 
                 if((cursor->cel)->prev != NULL)
-                    traz();
+                    cursor_traz();
                 iteradas--;
             }
             break;
@@ -624,14 +750,16 @@ int parse(console* cons){
             break;
     }
     }
+    
     full_print();
     
     while(pres_line->tail->next != NULL)
         pres_line->tail = pres_line->tail->next;
     
+    
     // passo recursivo: casos expurios
     if(cons->tamanho > 1){
-        if(check_vec(cons->letraz[1]) == false){
+        if(check_vec(cons->lecursor_traz[1]) == false){
             free(cons_input);
             return 0;
         }
@@ -639,7 +767,7 @@ int parse(console* cons){
             free(cons_input);
             return 0;
         }
-        if(c != 'I' || c != 'B' || c != 'S')
+        if(c != 'I' && c != 'B' && c != 'S')
             parse(cons_input);
         if(cons_input != NULL)
             free(cons_input);
@@ -656,9 +784,14 @@ int main(){
     cursor = (ponto*) malloc(sizeof(ponto));
     cursor->linha = 0; cursor->coluna = 0;
 
-    // linha original
+    // linhas principais
+    head_line = (linha*) malloc(sizeof(linha));
+    tail_line = (linha*) malloc(sizeof(linha));
     pres_line = (linha*) malloc(sizeof(linha));
     build_linha(pres_line);
+
+    head_line = pres_line;
+    tail_line = pres_line;
 
     console* v;
     v = (console*) malloc(sizeof(console));
@@ -680,7 +813,7 @@ int main(){
     cursor->cel = cel;
 
     int retval;
-    imprime_coord();
+    full_print();
     do {
         preenche_console(v);
         if(v->tamanho == 0)

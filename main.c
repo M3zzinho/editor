@@ -460,17 +460,24 @@ int KMP_busca(console* cons){
     return -1;
 }
 
-void mecanismo_de_busca(console *cons_input){
+bool mecanismo_de_busca(console *cons_input){
     int ind_kmp = KMP_busca(cons_input);
 
     if(ind_kmp == -1)
-        return;
-        
+        return false;
+    
     // anda ate o indice encontrado pelo metodo
     while(ind_kmp > 0){
         frente();
         ind_kmp--;
     }
+    return true;
+}
+
+void full_print(){
+    printa_celula();
+    imprime_cursor();
+    imprime_coord();
 }
 
 int parse(console* cons){
@@ -489,7 +496,8 @@ int parse(console* cons){
         cons_input->tamanho = cons->tamanho - 1;
         for(int i=0; i< cons_input->tamanho; i++)
             cons_input->letraz[i] = cons->letraz[i+1];
-    }
+    } else 
+        cons_input = NULL;
 
     // numero de iteracoes de uma dada funcao
     int iteradas = number_no_console(cons);
@@ -516,31 +524,36 @@ int parse(console* cons){
             break;
         case 'D':
             while(iteradas > 0){ 
-                delete_char();
-                iteradas--;
+                delete_char(); iteradas--;
             }
             break;
         case 'B':
             // primeiro caso comeca a busca a partir do inicio da linha
             cursor->cel = pres_line->head;
             cursor->coluna = 0;
-            
+            if(cons_input == NULL)
+                break;
+
             while(search_next == true){
                 ClearScreen();
+                search_next = mecanismo_de_busca(cons_input); 
 
-                mecanismo_de_busca(cons_input); 
-
-                printa_celula();
-                imprime_cursor();
-                imprime_coord();
-                printf("\n\n");
-                
                 if(cursor->cel->next == NULL){
-                    search_next = false;
-                    break;
+                    // lidar com caso da ultima celula
+                    if(cursor->cel->val != 
+                    cons_input->letraz[0])
+                        traz();
+
+                    search_next = false;break;
                 }
 
-                frente(); 
+                if(search_next == false){
+                    traz();break;
+                }
+
+                full_print();
+                printf("\n\n");
+            
                 printf("Continuar busca? (s/n) ");
                 fflush(stdin); // limpa o buffer de entrada
                 scanf("%c", &s);
@@ -548,10 +561,11 @@ int parse(console* cons){
                 while ((d = getchar()) != '\n' && d != EOF);
                 printf("\n");
 
-                if(s == 'n'){
-                    traz();
+                if(s == 'n')
                     search_next = false;
-                }
+
+                if(s == 's' && cursor->cel->next != NULL)
+                    frente();
             }
             break;
         case 'F': //move cursor pra frente
@@ -610,9 +624,7 @@ int parse(console* cons){
             break;
     }
     }
-    printa_celula();
-    imprime_cursor();
-    imprime_coord();
+    full_print();
     
     while(pres_line->tail->next != NULL)
         pres_line->tail = pres_line->tail->next;

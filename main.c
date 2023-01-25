@@ -64,10 +64,11 @@ void ClearScreen(){
 #define cap_local 64
 
 // funcoes implementadas
-#define NUM_FUNCOES 15
+#define NUM_FUNCOES 17
 char lista_f[NUM_FUNCOES] = {
     'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
-    'O', '$', 'P', 'Q', '!', 'B', 'N'};
+    'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
+    'H'};
 
 bool check_vec(char x) {
     if (x == '\0')
@@ -224,6 +225,7 @@ void cursor_baixo(){
         printf("Erro: cursor vazio\n");
         return;
     }
+    
     if(pres_line->down == NULL)
         return; 
 
@@ -234,18 +236,16 @@ void cursor_baixo(){
     pres_line->up = old_atual;
     old_atual->down = pres_line;
     
+
     // coloca o cursor na primeira celula da linha
     cursor->cel = pres_line->head;
     cursor->linha++;
-
     int old_coluna = cursor->coluna;
     cursor->coluna = 0;
 
-    cria_celula_vazia_a_direita();
+    if(pres_line->head == NULL)
+        cria_celula_vazia_a_direita();
     celula* aux = cursor->cel;
-
-    if(aux == NULL)
-        printf("old_coluna: %d", old_coluna);
 
     while(aux->next != NULL && old_coluna > 0){
         aux = aux->next;
@@ -271,6 +271,20 @@ void cursor_cima(){
     
     cursor->cel = pres_line->head;
     cursor->linha--;
+
+    int old_coluna = cursor->coluna;
+    cursor->coluna = 0;
+
+    if(pres_line->head == NULL)
+        cria_celula_vazia_a_direita();
+    celula* aux = cursor->cel;
+    while (aux->next != NULL && old_coluna > 0)
+    {
+        aux = aux->next;
+        cursor_frente();
+        old_coluna--;
+    }
+    
 }
 
 void insert_char_a_direita(char d){
@@ -301,28 +315,43 @@ void insert_char_a_direita(char d){
 }
 
 void insert_line_em_baixo(){
-    linha* new;
-    new = (linha*) malloc(sizeof(linha));
+    linha* new_line;
+    new_line = (linha*) malloc(sizeof(linha));
         
-    if(new == NULL){
+    if(new_line == NULL){
         printf("Erro ao alocar memoria para a linha\n");
         exit(1);
     }
 
-    build_linha(new);
+    build_linha(new_line);
 
     if(pres_line->down != NULL){
         linha* below = pres_line->down;
-        pres_line->down = new;
-        new->up = pres_line;
-        new->down = below;
-        below->up = new;
+        pres_line->down = new_line;
+        new_line->up = pres_line;
+        new_line->down = below;
+        below->up = new_line;
     } else {
-        pres_line->down = new;
-        new->up = pres_line;
+        pres_line->down = new_line;
+        new_line->up = pres_line;
     }
 
-    cursor_baixo();
+    celula* aux;
+    aux = (celula*) malloc(sizeof(celula));
+    if(aux == NULL){
+        printf("Erro ao alocar memoria para a celula\n");
+        exit(1);
+    }
+
+    build_celula(aux);
+    new_line->head = aux;
+    new_line->tail = aux;
+
+    cursor->cel = new_line->head;
+    cursor->linha++;
+    cursor->coluna = 0;
+
+    pres_line = new_line;
 }
 
 void insert_line_em_cima(){
@@ -381,8 +410,8 @@ void delete_char(){
     free(atual);
 }
 
-void print_line(){
-    celula* aux = pres_line->head;
+void print_line(linha* v){
+    celula* aux = v->head;
         
     if(aux == NULL){
         printf("\n"); return;
@@ -571,7 +600,7 @@ int KMP_busca(console* cons){
 bool mecanismo_de_busca(console *cons_input){
     int ind_kmp = KMP_busca(cons_input);
 
-    if(ind_kmp == -1)
+    if(ind_kmp == -1 && pres_line->down == NULL)
         return false;
     
     // anda ate o indice encontrado pelo metodo
@@ -592,14 +621,17 @@ void print_all_lines(){
             printf(" ");
         
         print_line(aux);
+        if(n == cursor->linha)
+            imprime_cursor();
+
         aux = aux->down;
         n++;
     }
 }
 
 void full_print(){
+    printf("\n");
     print_all_lines();
-    imprime_cursor();
     imprime_coord();
 }
 
@@ -636,10 +668,25 @@ int parse(console* cons){
 
     char s; bool search_next=true;
 
+    // realiza a funcao de acordo com o caractere
     if(isdigit(c)==false){
     switch(c){
         case 'G':
             tipo_de_cursor = (tipo_de_cursor + 1)% 2;
+            break;
+        case 'H': //vai pra linha anterior
+            while(iteradas > 0){ 
+                if(pres_line->up != NULL)
+                    cursor_cima();
+                iteradas--;
+            }
+            break;
+        case 'J':
+            while(iteradas > 0){ 
+                if(pres_line->down != NULL)
+                    cursor_baixo();
+                iteradas--;
+            }
             break;
         case 'N':
             insert_line_em_baixo();
@@ -655,7 +702,7 @@ int parse(console* cons){
             break;
         case 'B':
             // primeiro caso comeca a busca a partir do inicio da linha
-            cursor->cel = pres_line->head;
+            cursor->cel = head_line->head;
             cursor->coluna = 0;
             if(cons_input == NULL)
                 break;
@@ -663,6 +710,12 @@ int parse(console* cons){
             while(search_next == true){
                 ClearScreen();
                 search_next = mecanismo_de_busca(cons_input); 
+
+                if(cursor->cel->next == NULL && pres_line->down != NULL){
+                    cursor_baixo();
+                    cursor->cel = pres_line->head;
+                    cursor->coluna = 0;
+                }
 
                 if(cursor->cel->next == NULL){
                     // lidar com caso da ultima celula

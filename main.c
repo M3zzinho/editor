@@ -600,9 +600,10 @@ int KMP_busca(console* cons){
 bool mecanismo_de_busca(console *cons_input){
     int ind_kmp = KMP_busca(cons_input);
 
-    if(ind_kmp == -1 && pres_line->down == NULL)
+    if(ind_kmp == -1 && pres_line->down == NULL){
+        printf("Linha de baixo vazia\n");
         return false;
-    
+    }
     // anda ate o indice encontrado pelo metodo
     while(ind_kmp > 0){
         cursor_frente();
@@ -703,7 +704,11 @@ int parse(console* cons){
         case 'B':
             // primeiro caso comeca a busca a partir do inicio da linha
             cursor->cel = head_line->head;
-            cursor->coluna = 0;
+            cursor->coluna = 1;
+            cursor->linha = 0;
+
+            pres_line = head_line;
+
             if(cons_input == NULL)
                 break;
 
@@ -717,8 +722,8 @@ int parse(console* cons){
                     cursor->coluna = 0;
                 }
 
-                if(cursor->cel->next == NULL){
-                    // lidar com caso da ultima celula
+                // lidar com caso da ultima celula
+                if(cursor->cel->next == NULL && pres_line->down == NULL){
                     if(cursor->cel->val != 
                     cons_input->lecursor_traz[0])
                         cursor_traz();

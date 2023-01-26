@@ -703,7 +703,7 @@ int parse(console* cons){
             break;
         case 'B':
             // primeiro caso comeca a busca a partir do inicio da linha
-            cursor->cel = head_line->head;
+            cursor->cel = head_line->head->next;
             cursor->coluna = 1;
             cursor->linha = 0;
 
@@ -718,8 +718,8 @@ int parse(console* cons){
 
                 if(cursor->cel->next == NULL && pres_line->down != NULL){
                     cursor_baixo();
-                    cursor->cel = pres_line->head;
-                    cursor->coluna = 0;
+                    cursor->cel = pres_line->head->next;
+                    cursor->coluna = 1;
                 }
 
                 // lidar com caso da ultima celula

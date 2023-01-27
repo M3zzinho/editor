@@ -8,11 +8,11 @@
 #define cap_local 1024
 
 // funcoes implementadas
-#define NUM_FUNCOES 18
+#define NUM_FUNCOES 20
 char lista_f[NUM_FUNCOES] = {
     'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
     'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
-    'H', ':'};
+    'H', ':', 'A', 'E'};
 
 bool check_vec(char x) {
     if (x == '\0')
@@ -354,6 +354,34 @@ void insert_line_em_cima(){
         tail_line = tail_line->down;
 }
 
+void delete_line(){
+    // verifica se a linha esta vazia
+    if(pres_line->head == NULL){
+        printf("Erro: linha vazia\n");
+        return;
+    }
+
+    // verifica se a linha atual nao e a ultima
+    if(pres_line->down != NULL){
+        linha* below = pres_line->down;
+        pres_line->up->down = below;
+        below->up = pres_line->up;
+    } else
+        pres_line->up->down = NULL;
+
+    // move o cursor para a linha anterior
+    cursor->cel = pres_line->up->tail;
+    cursor->linha--;
+    cursor->coluna = pres_line->up->tamanho;
+
+    pres_line = pres_line->up;
+    numero_de_linhas--;
+
+    // atualiza a ultima linha
+    while(tail_line->down != NULL)
+        tail_line = tail_line->down;
+}
+
 void delete_char(){
     // verifica se o cursor e a lista estao vazios
     if(cursor == NULL || pres_line->head == NULL){
@@ -499,13 +527,21 @@ int tamanho_da_linha(){
 }
 
 char* line_to_string(){
-    int n = tamanho_da_linha();
+    int n = pres_line->tamanho;
     char* str = (char*) malloc(n*sizeof(char));
-    celula* aux = head->next;
+    celula* aux = pres_line->head->next;
     for(int i=0; i<n; i++){
         str[i] = aux->val;
         aux = aux->next;
     }
+    return str;
+}
+
+char* console_to_string(console* cons){
+    int n = cons->tamanho;
+    char* str = (char*) malloc(n*sizeof(char));
+    for(int i=0; i<n; i++)
+        str[i] = cons->letraz[i];
     return str;
 }
 
@@ -611,6 +647,63 @@ void full_print(){
     imprime_coord();
 } 
 
+void point_to_master_head(){
+    cursor->linha = 0;
+    cursor->coluna = 0;
+    cursor->cel = head_line->head;
+
+    pres_line = head_line;
+}
+
+void point_to_master_tail(){
+    cursor->linha = numero_de_linhas - 1;
+    cursor->coluna = pres_line->tamanho - 1;
+    cursor->cel = pres_line->tail;
+
+    pres_line = tail_line;
+}
+
+void escreve_arquivo(console* cons_input){
+    point_to_master_head();
+
+    // variaveis necessarias pra abrir um arquivo
+    char* file_name; FILE *arq;
+
+    file_name = console_to_string(cons_input);
+
+    arq = fopen(file_name, "w");
+    if(arq == NULL){
+        printf("Erro ao criar o arquivo\n");
+        return;
+    }
+
+    char* aux;
+    for(int i=0; i<numero_de_linhas; i++){
+        aux = line_to_string(pres_line);
+        fprintf(arq, "%s\n", aux);
+        cursor_baixo();
+    }
+    fclose(arq);
+}
+
+// void open_txt(char* nome){
+//     FILE* arq = fopen(nome, "r");
+//     if(arq == NULL){
+//         printf("Erro ao abrir o arquivo\n");
+//         return;
+//     }
+
+//     char c;
+//     while((c = fgetc(arq)) != EOF){
+//         if(c == '\n')
+//             nova_linha();
+//         else
+//             insere_letra(c);
+//     }
+//     fclose(arq);
+// }
+
+
 int parse(console* cons){
     // pega o primeiro caractere da string
     char c = cons->letraz[0];
@@ -694,6 +787,20 @@ int parse(console* cons){
             if(cons_input != NULL)
                 from_console_to_line(cons_input);
             break;
+        case 'E':
+            escreve_arquivo(cons_input);
+            break;
+        // case 'A': // abre um arquivo
+        //     if(head_line->head->next != NULL){
+        //         printf("Deseja salvar o arquivo atual antes de sair?\n");
+        //         while(s != "s" || s != "n"){
+        //             printf("Digite 's' para salvar ou 'n' para sair sem salvar: ");
+        //             fflush(stdin); // limpa o buffer de entrada
+        //             scanf("%c", &s);
+        //         }
+
+        //         break;
+        //     }    
         case 'D':
             while(iteradas > 0){ 
                 delete_char(); iteradas--;

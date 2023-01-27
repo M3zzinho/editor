@@ -5,70 +5,14 @@
 #include <math.h>
 #include <locale.h>
 
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-void ClearScreen(){
-  HANDLE                     hStdOut;
-  CONSOLE_SCREEN_BUFFER_INFO csbi;
-  DWORD                      count;
-  DWORD                      cellCount;
-  COORD                      homeCoords = { 0, 0 };
-
-  hStdOut = GetStdHandle( STD_OUTPUT_HANDLE );
-  if (hStdOut == INVALID_HANDLE_VALUE) return;
-
-  /* Get the number of cells in the current buffer */
-  if (!GetConsoleScreenBufferInfo( hStdOut, &csbi )) return;
-  cellCount = csbi.dwSize.X *csbi.dwSize.Y;
-
-  /* Fill the entire buffer with spaces */
-  if (!FillConsoleOutputCharacter(
-    hStdOut,
-    (TCHAR) ' ',
-    cellCount,
-    homeCoords,
-    &count
-    )) return;
-
-  /* Fill the entire buffer with the current colors and attributes */
-  if (!FillConsoleOutputAttribute(
-    hStdOut,
-    csbi.wAttributes,
-    cellCount,
-    homeCoords,
-    &count
-    )) return;
-
-  /* Move the cursor home */
-  SetConsoleCursorPosition( hStdOut, homeCoords );
-}
-
-#else // !_WIN32
-#include <unistd.h>
-#include <term.h>
-
-void ClearScreen(){
-  if (!cur_term)
-  {
-     int result;
-     setupterm( NULL, STDOUT_FILENO, &result );
-     if (result <= 0) return;
-  }
-
-   putp( tigetstr( "clear" ) );
-}
-#endif
-
-#define cap_local 64
+#define cap_local 1024
 
 // funcoes implementadas
-#define NUM_FUNCOES 17
+#define NUM_FUNCOES 18
 char lista_f[NUM_FUNCOES] = {
     'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
     'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
-    'H'};
+    'H', ':'};
 
 bool check_vec(char x) {
     if (x == '\0')
@@ -81,10 +25,9 @@ bool check_vec(char x) {
     return false;
 }
 
-// Variaveis globais
-/*****************************/
+// Principais estruturas
 typedef struct CONSOLE{
-    char *lecursor_traz;
+    char *letraz;
     int tamanho;
 } console;
 
@@ -108,40 +51,41 @@ typedef struct PONTO{
     struct CELULA* cel;
 } ponto;
 
+
+// Variaveis globais
 ponto *cursor;
 celula *head, *tail, *ctrl_c, *ctrl_x;
 linha* pres_line, *head_line, *tail_line;
 
-
+int numero_de_linhas = 1;
 int tipo_de_cursor = 0;
-
 int ctrl_c_coluna = 0;
 
 // Funcoes do console
 /*****************************/
 void build_console(console* v){
     v->tamanho = 0;
-    v->lecursor_traz = (char*) malloc(cap_local * sizeof(char));
+    v->letraz = (char*) malloc(cap_local * sizeof(char));
 
-    if(v->lecursor_traz == NULL){
+    if(v->letraz == NULL){
         printf("Erro ao alocar memoria para o console");
         exit(1);
     }
-    v->lecursor_traz[cap_local - 1] = '\0';
+    v->letraz[cap_local - 1] = '\0';
 }
 
 void preenche_console(console* v){
     char c; int i = 0;
 
     while ((c = getchar()) != 10) {
-        v->lecursor_traz[i] = c;
+        v->letraz[i] = c;
         i++;
     }
     v->tamanho = i;
 }
 
 void reseta_console(console* v){
-    v->lecursor_traz[v->tamanho] = '\0';
+    v->letraz[v->tamanho] = '\0';
     v->tamanho = 0;
 }
 
@@ -150,7 +94,7 @@ void delete_char_console(console* cons, int i) {
         return;
 
     for (int j = i; j < cons->tamanho - 1; j++)
-        cons->lecursor_traz[j] = cons->lecursor_traz[j + 1];
+        cons->letraz[j] = cons->letraz[j + 1];
 
     cons->tamanho--;
 }
@@ -317,7 +261,8 @@ void insert_char_a_direita(char d){
 void insert_line_em_baixo(){
     linha* new_line;
     new_line = (linha*) malloc(sizeof(linha));
-        
+    
+    // verifica se a linha foi alocada
     if(new_line == NULL){
         printf("Erro ao alocar memoria para a linha\n");
         exit(1);
@@ -325,6 +270,7 @@ void insert_line_em_baixo(){
 
     build_linha(new_line);
 
+    // verifica se a linha atual nao e a ultima
     if(pres_line->down != NULL){
         linha* below = pres_line->down;
         pres_line->down = new_line;
@@ -347,36 +293,65 @@ void insert_line_em_baixo(){
     new_line->head = aux;
     new_line->tail = aux;
 
+    // move o cursor para a nova linha
     cursor->cel = new_line->head;
     cursor->linha++;
     cursor->coluna = 0;
 
+    numero_de_linhas++;
     pres_line = new_line;
+
+    // atualiza a ultima linha
+    while(tail_line->down != NULL)
+        tail_line = tail_line->down;
 }
 
 void insert_line_em_cima(){
-    linha* new;
-    new = (linha*) malloc(sizeof(linha));
-        
-    if(new == NULL){
+    linha* new_line;
+    new_line = (linha*) malloc(sizeof(linha));
+
+    // verifica se a linha foi alocada
+    if(new_line == NULL){
         printf("Erro ao alocar memoria para a linha\n");
         exit(1);
     }
 
-    build_linha(new);
+    build_linha(new_line);
 
+    // verifica se a linha atual nao e a primeira
     if(pres_line->up != NULL){
         linha* above = pres_line->up;
-        pres_line->up = new;
-        new->down = pres_line;
-        new->up = above;
-        above->down = new;
+        pres_line->up = new_line;
+        new_line->down = pres_line;
+        new_line->up = above;
+        above->down = new_line;
     } else {
-        pres_line->up = new;
-        new->down = pres_line;
+        pres_line->up = new_line;
+        new_line->down = pres_line;
     }
 
-    cursor_cima();
+    celula* aux;
+    aux = (celula*) malloc(sizeof(celula));
+    if(aux == NULL){
+        printf("Erro ao alocar memoria para a nova celula\n");
+        exit(1);
+    }
+
+    build_celula(aux);
+    new_line->head = aux;
+    new_line->tail = aux;
+
+    // move o cursor para a nova linha
+    cursor->cel = new_line->head;
+    cursor->linha--;
+    cursor->coluna = 0;
+
+    numero_de_linhas++;
+    pres_line = new_line;
+
+    // atualiza a ultima linha
+    while(tail_line->down != NULL)
+        tail_line = tail_line->down;
 }
 
 void delete_char(){
@@ -427,7 +402,7 @@ void print_line(linha* v){
 
 void from_console_to_line(console* cons){
     for(int i=0; i < cons->tamanho; i++)
-	    insert_char_a_direita(cons->lecursor_traz[i]);
+	    insert_char_a_direita(cons->letraz[i]);
 }
 
 void imprime_cursor(){
@@ -440,18 +415,18 @@ void imprime_cursor(){
 }
 
 void imprime_coord(){
-    printf("%d,%d>", cursor->linha, cursor->coluna);
+    printf("(%d,%d) de (%d,%d): ", cursor->linha, cursor->coluna, numero_de_linhas, pres_line->tamanho);
 }
 
 int number_no_console(console* d){
-    if(d->lecursor_traz[1] == '\0' || d->tamanho == 1)
+    if(d->letraz[1] == '\0' || d->tamanho == 1)
         return 1;
     
     int S = 0;
     int n = d->tamanho;
     
     for(int i=1; i<n; i++){
-        char x=d->lecursor_traz[n-i];
+        char x=d->letraz[n-i];
         if(isdigit(x)==0)
             break;
         S = pow(10,i-1)*(x-'0') + S;
@@ -566,7 +541,7 @@ int KMP_busca(console* cons){
     char padrao[M];
 
     for(int i=0; i<M; i++)
-        padrao[i] = cons->lecursor_traz[i];
+        padrao[i] = cons->letraz[i];
 
     int prefixos[M];
 
@@ -637,10 +612,8 @@ void full_print(){
 }
 
 int parse(console* cons){
-    ClearScreen();
-
     // pega o primeiro caractere da string
-    char c = cons->lecursor_traz[0];
+    char c = cons->letraz[0];
     console *cons_input;
 
     // lista de celulas auxiliar removendo a cabeca para funcoes que usam strings do usuario
@@ -651,16 +624,19 @@ int parse(console* cons){
         build_console(cons_input);
         cons_input->tamanho = cons->tamanho - 1;
         for(int i=0; i< cons_input->tamanho; i++)
-            cons_input->lecursor_traz[i] = cons->lecursor_traz[i+1];
+            cons_input->letraz[i] = cons->letraz[i+1];
     } else 
         cons_input = NULL;
 
     // numero de iteracoes de uma dada funcao
-    int iteradas = number_no_console(cons);
+    int iteradas = 1;
+    iteradas = number_no_console(cons);
+
+    int x, abs_dist; // linha to go
 
     // uma vez que o numero de iteradas da funcao ja esta aramazenado, removemos ele do console
     int j=0;
-    while(isdigit(cons->lecursor_traz[j+1])){
+    while(isdigit(cons->letraz[j+1])){
         delete_char_console(cons, j+1); j++;
     }
 
@@ -680,6 +656,28 @@ int parse(console* cons){
                 if(pres_line->up != NULL)
                     cursor_cima();
                 iteradas--;
+            }
+            break;
+        case ':': // move o cursor para o inicio da linha x
+            if(isdigit(cons->letraz[1])){
+                x = number_no_console(cons);
+                
+                // distancia entre atual e x
+                abs_dist = abs(x-cursor->linha);
+                while (abs_dist >= 0){
+                    if(x > cursor->linha)
+                        cursor_baixo();
+                    else if(x < cursor->linha)
+                        cursor_cima();
+                    abs_dist--;
+                }
+                break;
+            } else if(cons->letraz[1] == 'F'){
+                //vai pra ultima linha
+                pres_line = tail_line;
+                cursor->cel = pres_line->head;
+                cursor->coluna = 0;
+                cursor->linha = numero_de_linhas - 1;
             }
             break;
         case 'J':
@@ -713,7 +711,6 @@ int parse(console* cons){
                 break;
 
             while(search_next == true){
-                ClearScreen();
                 search_next = mecanismo_de_busca(cons_input); 
 
                 if(cursor->cel->next == NULL && pres_line->down != NULL){
@@ -725,7 +722,7 @@ int parse(console* cons){
                 // lidar com caso da ultima celula
                 if(cursor->cel->next == NULL && pres_line->down == NULL){
                     if(cursor->cel->val != 
-                    cons_input->lecursor_traz[0])
+                    cons_input->letraz[0])
                         cursor_traz();
 
                     search_next = false;break;
@@ -810,14 +807,14 @@ int parse(console* cons){
     }
     
     full_print();
-    
+
     while(pres_line->tail->next != NULL)
         pres_line->tail = pres_line->tail->next;
     
     
     // passo recursivo: casos expurios
     if(cons->tamanho > 1){
-        if(check_vec(cons->lecursor_traz[1]) == false){
+        if(check_vec(cons->letraz[1]) == false){
             free(cons_input);
             return 0;
         }
@@ -874,8 +871,6 @@ int main(){
     full_print();
     do {
         preenche_console(v);
-        if(v->tamanho == 0)
-            ClearScreen();
         retval = parse(v);
         reseta_console(v);
     } while (retval != 2);

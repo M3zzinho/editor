@@ -609,7 +609,7 @@ void full_print(){
     printf("\n");
     print_all_lines();
     imprime_coord();
-}
+} 
 
 int parse(console* cons){
     // pega o primeiro caractere da string

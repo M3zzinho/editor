@@ -704,8 +704,10 @@ void lida_com_texto_ja_escrito(){
     char s ='a'; console* nome_do_arquivo;
     nome_do_arquivo = malloc(sizeof(nome_do_arquivo));
 
+    char str[1024];
+
     printf("Deseja salvar o arquivo atual antes de sair?\n");
-    while(s != 's' || s != 'n'){
+    while(s != 's' && s != 'n'){
         printf("Digite 's' para salvar ou 'n' para sair sem salvar: ");
         fflush(stdin); // limpa o buffer de entrada
         scanf("%c", &s);
@@ -715,8 +717,13 @@ void lida_com_texto_ja_escrito(){
 
     if(s == 's'){
         printf("\nNome do arquivo: ");
-        fflush(stdin); // limpa o buffer de entrada
-        scanf("%s", nome_do_arquivo->letraz);
+        for(int i =0, i < 1024; s != '\0') {
+            fflush(stdin); // limpa o buffer de entrada
+            scanf("%c", s);
+            str[i++] = s;
+            c = getchar();
+        }
+        
 
         escreve_arquivo(nome_do_arquivo);
     }

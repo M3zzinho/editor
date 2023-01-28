@@ -413,6 +413,21 @@ void delete_char(){
     free(atual);
 }
 
+void delete_word(){
+    // verifica se o cursor e a lista estao vazios
+    if(cursor == NULL || pres_line->head == NULL){
+        printf("Erro: cursor ou lista estao vazios\n");
+        return;
+    }
+    celula *atual; atual = cursor->cel;
+    
+    while(cursor->cel->val != ' ' && 
+          cursor->cel->prev != NULL){
+        delete_char(); 
+        pres_line->tamanho--;
+    }
+}
+
 void print_line(linha* v){
     celula* aux = v->head;
         
@@ -656,11 +671,10 @@ void point_to_master_head(){
 }
 
 void point_to_master_tail(){
+    pres_line = tail_line;
+    cursor->cel = pres_line->tail;
     cursor->linha = numero_de_linhas - 1;
     cursor->coluna = pres_line->tamanho - 1;
-    cursor->cel = pres_line->tail;
-
-    pres_line = tail_line;
 }
 
 void escreve_arquivo(console* cons_input){
@@ -684,6 +698,35 @@ void escreve_arquivo(console* cons_input){
         cursor_baixo();
     }
     fclose(arq);
+}
+
+void lida_com_texto_ja_escrito(){
+    char s ='a'; console* nome_do_arquivo;
+    nome_do_arquivo = malloc(sizeof(nome_do_arquivo));
+
+    printf("Deseja salvar o arquivo atual antes de sair?\n");
+    while(s != 's' || s != 'n'){
+        printf("Digite 's' para salvar ou 'n' para sair sem salvar: ");
+        fflush(stdin); // limpa o buffer de entrada
+        scanf("%c", &s);
+        int d;
+        while ((d = getchar()) != '\n' && d != EOF);
+    }
+
+    if(s == 's'){
+        printf("\nNome do arquivo: ");
+        fflush(stdin); // limpa o buffer de entrada
+        scanf("%s", nome_do_arquivo->letraz);
+
+        escreve_arquivo(nome_do_arquivo);
+    }
+                
+    point_to_master_tail();
+    // limpa a tela
+    while(numero_de_linhas > 1)
+        delete_line();
+
+    free(nome_do_arquivo);
 }
 
 // void open_txt(char* nome){
@@ -790,20 +833,23 @@ int parse(console* cons){
         case 'E':
             escreve_arquivo(cons_input);
             break;
-        // case 'A': // abre um arquivo
-        //     if(head_line->head->next != NULL){
-        //         printf("Deseja salvar o arquivo atual antes de sair?\n");
-        //         while(s != "s" || s != "n"){
-        //             printf("Digite 's' para salvar ou 'n' para sair sem salvar: ");
-        //             fflush(stdin); // limpa o buffer de entrada
-        //             scanf("%c", &s);
-        //         }
-
-        //         break;
-        //     }    
+        case 'A': // abre um arquivo
+            if(head_line->head->next != NULL);
+                lida_com_texto_ja_escrito();
+            break;
         case 'D':
-            while(iteradas > 0){ 
-                delete_char(); iteradas--;
+            if(isdigit(cons_input->letraz[0])){
+                while(iteradas > 0){ 
+                    delete_char(); 
+                    iteradas--;
+                }
+                break;
+            } else if(cons_input->letraz[0] == 'L'){
+                delete_line();
+                break;
+            } else if(cons_input->letraz[0] == 'W'){
+                delete_word();
+                break;
             }
             break;
         case 'B':

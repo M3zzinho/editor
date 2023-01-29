@@ -15,9 +15,9 @@ char lista_f[NUM_FUNCOES] = {
     'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
     'H', ':', 'A', 'E'};
 
-#define NUM_FUNCOES_COMEM_STRING 5
+#define NUM_FUNCOES_COMEM_STRING 6
 char lista_f_come_string[NUM_FUNCOES_COMEM_STRING] = {
-    'I', 'B', 'S', 'E', 'A'};
+    'I', 'B', 'S', 'E', 'A', ':'};
 
 bool check_vec(char x, char *lista, int num_funcoes)
 {
@@ -336,6 +336,8 @@ void insert_line_em_baixo()
     new_line->head = aux;
     new_line->tail = aux;
 
+    
+
     // move o cursor para a nova linha
     cursor->cel = new_line->head;
     cursor->linha++;
@@ -426,27 +428,27 @@ void delete_line()
     else
         proxima = NULL;
 
-    
-    if(anterior==NULL && proxima==NULL)
+    if (anterior == NULL && proxima == NULL)
         return;
-
 
     if (anterior != NULL)
         anterior->down = proxima;
-    if (proxima != NULL)  
+    if (proxima != NULL)
         proxima->up = anterior;
 
-    if(old_atual == tail_line)
+    if (old_atual == tail_line)
         tail_line = anterior;
-    
-    if(old_atual == head_line){
+
+    if (old_atual == head_line)
+    {
         head_line = proxima;
         cursor_baixo();
-    } else 
+    }
+    else
     {
         cursor_cima();
         free(old_atual);
-    }    
+    }
     numero_de_linhas--;
 }
 
@@ -471,7 +473,7 @@ void delete_char()
         proxima = NULL;
 
     // linha vazia
-    if(anterior==NULL && proxima==NULL)
+    if (anterior == NULL && proxima == NULL)
         return;
 
     if (anterior != NULL)
@@ -483,10 +485,12 @@ void delete_char()
     if (old_atual == pres_line->tail)
         pres_line->tail = anterior;
 
-    if (old_atual == pres_line->head->next){
+    if (old_atual == pres_line->head->next)
+    {
         pres_line->head->next = proxima;
         cursor_frente();
-    } else 
+    }
+    else
     {
         cursor_traz();
         free(old_atual);
@@ -541,6 +545,15 @@ void from_console_to_line(console *cons)
 
 void imprime_cursor()
 {
+    int blank = 0;
+    while (numero_de_linhas >= pow(10, blank))
+    {
+        blank++;
+        printf(" ");
+    }
+    // por conta da |
+    printf(" ");
+
     for (int i = 0; i < cursor->coluna; i++)
         printf(" ");
     if (tipo_de_cursor == 0)
@@ -551,7 +564,7 @@ void imprime_cursor()
 
 void imprime_coord()
 {
-    printf("(%d,%d) de (%d,%d): ", cursor->linha, cursor->coluna, numero_de_linhas, pres_line->tamanho);
+    printf("(%d,%d): ", cursor->linha, cursor->coluna);
 }
 
 int number_no_console(console *d)
@@ -560,11 +573,10 @@ int number_no_console(console *d)
         return 1;
 
     int S = 0;
-    char* end;
-    char* d_letras = d->letras;
+    char *end;
+    char *d_letras = d->letras;
 
-
-    S = (int) strtol(d_letras, &end, 10);
+    S = (int)strtol(d_letras, &end, 10);
     if (end == d->letras)
         return 1;
 
@@ -660,7 +672,7 @@ char *line_to_string(linha *l)
         str[i] = aux->val;
         i++;
     }
-    printf("str = %s\n", str);
+    // printf("str = %s\n", str);
     return str;
 }
 
@@ -670,6 +682,60 @@ char *console_to_string(console *cons, char *str)
 
     printf("str = %s\n", str);
     return str;
+}
+
+void print_all_lines()
+{
+    linha *aux = head_line;
+    int n = 0;
+
+    int blank = 0;
+
+    while (numero_de_linhas >= pow(10, blank))
+        blank++;
+
+    while (aux != NULL)
+    {
+        if (n == cursor->linha)
+            printf(">");
+        else
+            printf(" ");
+
+        printf("%*d|", blank, n);
+
+        print_line(aux);
+        if (n == cursor->linha)
+            imprime_cursor();
+
+        aux = aux->down;
+        n++;
+    }
+}
+
+void full_print()
+{
+    printf("------------------------\n");
+    print_all_lines();
+    printf("------------------------\n");
+    imprime_coord();
+}
+
+void point_to_master_head()
+{
+    pres_line = head_line;
+
+    cursor->cel = pres_line->head;
+    cursor->linha = 0;
+    cursor->coluna = 0;
+}
+
+void point_to_master_tail()
+{
+    pres_line = tail_line;
+
+    cursor->cel = pres_line->tail;
+    cursor->linha = numero_de_linhas - 1;
+    cursor->coluna = pres_line->tamanho - 1;
 }
 
 // Implementando o algoritimo de Knuth Morris Pratt
@@ -748,9 +814,9 @@ int KMP_busca(console *cons)
     return -1;
 }
 
-bool mecanismo_de_busca(console *cons_input)
+bool mecanismo_de_busca(console *cons)
 {
-    int ind_kmp = KMP_busca(cons_input);
+    int ind_kmp = KMP_busca(cons);
 
     if (ind_kmp == -1 && pres_line->down == NULL)
     {
@@ -766,51 +832,59 @@ bool mecanismo_de_busca(console *cons_input)
     return true;
 }
 
-void print_all_lines()
+void performa_busca(console *cons)
 {
-    linha *aux = head_line;
-    int n = 0;
-    while (aux != NULL)
+    // primeiro caso comeca a busca a partir do inicio da linha
+    point_to_master_head();
+
+    if (cons == NULL)
+        return;
+
+    bool search_next = true;
+
+    while (search_next == true)
     {
-        if (n == cursor->linha)
-            printf(">");
-        else
-            printf(" ");
+        search_next = mecanismo_de_busca(cons);
 
-        print_line(aux);
-        if (n == cursor->linha)
-            imprime_cursor();
+        // lidar com caso da ultima celula da linha
+        if (cursor->cel->next == NULL && pres_line->down != NULL)
+        {
+            cursor_baixo();
+            cursor->cel = pres_line->head->next;
+            cursor->coluna = 1;
+        }
 
-        aux = aux->down;
-        n++;
+        // lidar com caso da ultima celula da ultima linha  
+        if (cursor->cel->next == NULL && pres_line->down == NULL)
+        {
+            if (cursor->cel->val != cons->letras[0])
+                cursor_traz();
+
+            search_next = false;
+            break;
+        }
+
+        if (search_next == false)
+        {
+            cursor_traz();
+            break;
+        }
+
+        full_print();
+        printf("\n\n");
+
+        printf("Continuar busca? (s/n) ");
+        fflush(stdin); // limpa o buffer de entrada
+        char s; scanf("%c", &s);int d;
+        while ((d = getchar()) != '\n' && d != EOF);
+        printf("\n");
+
+        if (s == 'n')
+            search_next = false;
+
+        if (s == 's' && cursor->cel->next != NULL)
+            cursor_frente();
     }
-}
-
-void full_print()
-{
-    printf("------------------------\n");
-    print_all_lines();
-    printf("------------------------\n");
-    imprime_coord();
-}
-
-void point_to_master_head()
-{
-    pres_line = head_line;
-
-    cursor->cel = pres_line->head;
-    cursor->linha = 0;
-    cursor->coluna = 0;
-}
-
-void point_to_master_tail()
-{
-    printf("tail0");
-    pres_line = tail_line;
-
-    cursor->cel = pres_line->tail;
-    cursor->linha = numero_de_linhas - 1;
-    cursor->coluna = pres_line->tamanho - 1;
 }
 
 void escreve_arquivo(console *cons_input)
@@ -826,13 +900,13 @@ void escreve_arquivo(console *cons_input)
     }
     file_name = (char *)malloc((cons_input->tamanho) * sizeof(char));
 
-    printf("cons_input->letras = %s\n", cons_input->letras);
+    // printf("cons_input->letras = %s\n", cons_input->letras);
 
     snprintf(file_name, cons_input->tamanho, "%s", cons_input->letras);
 
     file_name[cons_input->tamanho] = '\0';
 
-    printf("file_name = %s\n", file_name);
+    // printf("file_name = %s\n", file_name);
 
     arq = fopen(file_name, "w");
     if (arq == NULL)
@@ -896,6 +970,42 @@ void lida_com_texto_ja_escrito()
     free(nome_do_arquivo);
 }
 
+void move_cursor_to_line(console *cons)
+{
+    int x, abs_dist; // linha to go
+    char d = cons->letras[0];
+
+    if (d == '0')
+        point_to_master_head();
+    else if (isdigit(d) == 1)
+    {
+        x = number_no_console(cons);
+
+        // distancia entre atual e x
+        abs_dist = abs(x - cursor->linha);
+
+        if (abs_dist == 0)
+            return;
+
+        while (abs_dist > 0)
+        {
+            if (x > cursor->linha)
+                cursor_baixo();
+            else if (x < cursor->linha)
+                cursor_cima();
+            abs_dist--;
+        }
+    }
+    else if (d == 'F')
+    {
+        // vai pra ultima linha
+        pres_line = tail_line;
+        cursor->cel = pres_line->head;
+        cursor->coluna = 0;
+        cursor->linha = numero_de_linhas - 1;
+    }
+}
+
 int parse(console *cons)
 {
     // pega o primeiro caractere da string
@@ -904,23 +1014,17 @@ int parse(console *cons)
 
     // numero de iteracoes de uma dada funcao
     int iteradas = 1;
-
-    int x, abs_dist; // linha to go
-
     // uma vez que o numero de iteradas da funcao ja esta armazenado,
     // removemos ele do console
     if (!check_vec(c, lista_f_come_string,
-                  NUM_FUNCOES_COMEM_STRING))
+                   NUM_FUNCOES_COMEM_STRING))
     {
-        iteradas = number_no_console(cons);        
+        iteradas = number_no_console(cons);
         while (isdigit(cons->letras[0]))
             delete_char_console(cons, 0);
         if (iteradas == 0)
             iteradas = 1;
-    }    
-
-    char s;
-    bool search_next = true;
+    }
 
     // realiza a funcao de acordo com o caractere
     if (isdigit(c) == false)
@@ -939,30 +1043,7 @@ int parse(console *cons)
             }
             break;
         case ':': // move o cursor para o inicio da linha x
-            if (isdigit(cons->letras[1]))
-            {
-                x = number_no_console(cons);
-
-                // distancia entre atual e x
-                abs_dist = abs(x - cursor->linha);
-                while (abs_dist >= 0)
-                {
-                    if (x > cursor->linha)
-                        cursor_baixo();
-                    else if (x < cursor->linha)
-                        cursor_cima();
-                    abs_dist--;
-                }
-                break;
-            }
-            else if (cons->letras[1] == 'F')
-            {
-                // vai pra ultima linha
-                pres_line = tail_line;
-                cursor->cel = pres_line->head;
-                cursor->coluna = 0;
-                cursor->linha = numero_de_linhas - 1;
-            }
+            move_cursor_to_line(cons);
             break;
         case 'J':
             while (iteradas > 0)
@@ -973,7 +1054,11 @@ int parse(console *cons)
             }
             break;
         case 'N':
-            insert_line_em_baixo();
+            while (iteradas > 0)
+            {
+                insert_line_em_baixo();
+                iteradas--;
+            }
             break;
         case 'I':
             if (cons != NULL)
@@ -1001,69 +1086,15 @@ int parse(console *cons)
                 delete_char_console(cons, 0);
                 break;
             }
-            
+
             while (iteradas > 0)
             {
-                    delete_char();
-                    iteradas--;
+                delete_char();
+                iteradas--;
             }
             break;
         case 'B':
-            // primeiro caso comeca a busca a partir do inicio da linha
-            cursor->cel = head_line->head->next;
-            cursor->coluna = 1;
-            cursor->linha = 0;
-
-            pres_line = head_line;
-
-            if (cons == NULL)
-                break;
-
-            while (search_next == true)
-            {
-                search_next = mecanismo_de_busca(cons);
-
-                if (cursor->cel->next == NULL && pres_line->down != NULL)
-                {
-                    cursor_baixo();
-                    cursor->cel = pres_line->head->next;
-                    cursor->coluna = 1;
-                }
-
-                // lidar com caso da ultima celula
-                if (cursor->cel->next == NULL && pres_line->down == NULL)
-                {
-                    if (cursor->cel->val !=
-                        cons->letras[0])
-                        cursor_traz();
-
-                    search_next = false;
-                    break;
-                }
-
-                if (search_next == false)
-                {
-                    cursor_traz();
-                    break;
-                }
-
-                full_print();
-                printf("\n\n");
-
-                printf("Continuar busca? (s/n) ");
-                fflush(stdin); // limpa o buffer de entrada
-                scanf("%c", &s);
-                int d;
-                while ((d = getchar()) != '\n' && d != EOF)
-                    ;
-                printf("\n");
-
-                if (s == 'n')
-                    search_next = false;
-
-                if (s == 's' && cursor->cel->next != NULL)
-                    cursor_frente();
-            }
+            performa_busca(cons);
             break;
         case 'F': // move cursor pra cursor_frente
             while (iteradas > 0)
@@ -1113,7 +1144,11 @@ int parse(console *cons)
             ctrl_c_coluna = copia_memoria();
             break;
         case 'V':
-            cola_memoria();
+            while (iteradas > 0)
+            {
+                cola_memoria();
+                iteradas--;
+            }
             break;
         case 'X':
             recorta_memoria();

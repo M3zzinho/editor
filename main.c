@@ -5,6 +5,7 @@
 #include <math.h>
 #include <locale.h>
 #include <string.h>
+#include <windows.h>
 
 #define cap_local 1024
 
@@ -264,53 +265,6 @@ void cursor_cima()
     }
 }
 
-void delete_line()
-{
-    // verifica se o cursor e a lista estao vazios
-    if (cursor == NULL || pres_line->head == NULL)
-    {
-        printf("Erro: cursor ou lista estao vazios\n");
-        return;
-    }
-
-    linha *old_atual = pres_line;
-    linha *anterior, *proxima;
-
-    // verifica se a linha atual nao e a primeira
-    if (old_atual->up != NULL)
-        anterior = old_atual->up;
-    else
-        anterior = NULL;
-    // verifica se a linha atual nao e a ultima
-    if (old_atual->down != NULL)
-        proxima = old_atual->down;
-    else
-        proxima = NULL;
-
-    if (anterior == NULL && proxima == NULL)
-        return;
-
-    if (anterior != NULL)
-        anterior->down = proxima;
-    if (proxima != NULL)
-        proxima->up = anterior;
-
-    if (old_atual == tail_line)
-        tail_line = anterior;
-
-    if (old_atual == head_line)
-    {
-        head_line = proxima;
-        cursor_baixo();
-    }
-    else
-    {
-        cursor_cima();
-        free(old_atual);
-    }
-    numero_de_linhas--;
-}
-
 void delete_char_a_esquerda()
 {
     // verifica se o cursor e a lista estao vazios
@@ -358,6 +312,89 @@ void delete_char_a_esquerda()
     pres_line->tamanho--;
 }
 
+void delete_line()
+{
+    // verifica se o cursor e a lista estao vazios
+    if (cursor == NULL || pres_line->head == NULL)
+    {
+        printf("Erro: cursor ou lista estao vazios\n");
+        return;
+    }
+
+    linha *old_atual = pres_line;
+    linha *anterior, *proxima;
+
+    if (old_atual->up != NULL)
+        anterior = old_atual->up;
+    else
+        anterior = NULL;
+
+    if (old_atual->down != NULL)
+        proxima = old_atual->down;
+    else
+        proxima = NULL;
+
+    if (head_line == tail_line)
+    {
+        if (cursor->cel != pres_line->tail)
+        {
+            cursor->cel = pres_line->tail;
+            cursor->coluna = pres_line->tamanho;
+        }
+
+        celula *aux = cursor->cel;
+        while (aux->prev != NULL)
+        {
+            delete_char_a_esquerda();
+            // full_print();
+            aux = cursor->cel;
+        }
+
+        return;
+    }
+
+    if (old_atual == head_line)
+    {
+        head_line = proxima;
+        cursor_baixo();
+        pres_line->up = NULL;
+        pres_line->down = proxima->down;
+        pres_line = proxima;
+        pres_line->head = proxima->head;
+        pres_line->tail = proxima->tail;
+        pres_line->tamanho = proxima->tamanho;
+
+        (proxima->up)->down = pres_line;
+    }
+    else if (old_atual == tail_line)
+    {
+        tail_line = anterior;
+        cursor_cima();
+        pres_line->down = NULL;
+        pres_line->up = anterior->up;
+        pres_line->head = anterior->head;
+        pres_line->tail = anterior->tail;
+        pres_line->tamanho = anterior->tamanho;
+
+        // (anterior->down)->up = pres_line;
+    }
+    else
+    {
+        cursor_cima();
+        pres_line = anterior;
+        pres_line->down = proxima;
+        pres_line->up = anterior->up;
+        pres_line->head = anterior->head;
+        pres_line->tail = anterior->tail;
+        pres_line->tamanho = anterior->tamanho;
+
+        proxima->up = pres_line;
+    }
+    free(old_atual);
+
+    numero_de_linhas--;
+}
+
 void delete_word()
 {
     // verifica se o cursor e a lista estao vazios
@@ -366,8 +403,6 @@ void delete_word()
         printf("Erro: cursor ou lista estao vazios\n");
         return;
     }
-    celula *atual;
-    atual = cursor->cel;
 
     while (cursor->cel->val != ' ' &&
            cursor->cel->prev != NULL)
@@ -456,7 +491,8 @@ void full_print()
     imprime_coord();
 }
 
-celula* marca_posicao_atual(){
+celula *marca_posicao_atual()
+{
     celula *aux = (celula *)malloc(sizeof(celula));
     if (aux == NULL)
     {
@@ -470,7 +506,8 @@ celula* marca_posicao_atual(){
     return aux;
 }
 
-void volta_pra_posicao_marcada(celula* marcada, int linha, int coluna){
+void volta_pra_posicao_marcada(celula *marcada, int linha, int coluna)
+{
     cursor->cel = marcada;
     cursor->cel->next = marcada->next;
     cursor->cel->prev = marcada->prev;
@@ -509,7 +546,7 @@ void insert_char_a_direita(char d)
     (cursor->cel)->val = d;
     pres_line->tamanho++;
 
-    while(pres_line->tail->next != NULL)
+    while (pres_line->tail->next != NULL)
         pres_line->tail = pres_line->tail->next;
 }
 
@@ -555,29 +592,26 @@ void insert_line_em_baixo()
     new_line->tail = aux;
 
     // full_print();
-    while (cursor->cel->next != NULL)
-    {        
-        // full_print();
-        cursor_frente();
-        celula* posicao_antiga = marca_posicao_atual();
-        int linha_antiga = cursor->linha;
-        int coluna_antiga = cursor->coluna;
+    if (cursor->cel->next != NULL)
+    {
+        celula *prim_char = cursor->cel->next;
 
-
-        // move o cursor e insere o caractere
-        cursor->cel = new_line->tail;
-        cursor->coluna = new_line->tamanho;
-        cursor->linha++;
-        insert_char_a_direita(posicao_antiga->val);
+        pres_line->tail = cursor->cel;
+        pres_line->tail->next = NULL;
+        int old_tamanho = pres_line->tamanho;
+        pres_line->tamanho = cursor->coluna;
         // full_print();
 
-        // devolve o cursor para a posicao antiga
-        volta_pra_posicao_marcada(posicao_antiga, linha_antiga, coluna_antiga);
+        aux->next = prim_char;
+        prim_char->prev = aux;
+        new_line->tamanho = old_tamanho - cursor->coluna;
 
-        // cursor_frente();
-        delete_char_a_esquerda();
+        celula *new_tail = prim_char;
+        while (new_tail->next != NULL)
+            new_tail = new_tail->next;
+        new_line->tail = new_tail;
         // full_print();
-    }    
+    }
 
     // move o cursor para a nova linha
     cursor->cel = new_line->head;
@@ -717,6 +751,11 @@ char *console_to_string(console *cons, char *str)
 
 void point_to_master_head()
 {
+    // while (head_line->up != NULL)
+    //     head_line = head_line->up;
+    // while (head_line->head->prev != NULL)
+    //     head_line->head = head_line->head->prev;
+
     pres_line = head_line;
 
     cursor->cel = pres_line->head;
@@ -726,11 +765,16 @@ void point_to_master_head()
 
 void point_to_master_tail()
 {
+    while (tail_line->down != NULL)
+        tail_line = tail_line->down;
+    while (tail_line->tail->next != NULL)
+        tail_line->tail = tail_line->tail->next;
+
     pres_line = tail_line;
 
     cursor->cel = pres_line->tail;
     cursor->linha = numero_de_linhas - 1;
-    cursor->coluna = pres_line->tamanho - 1;
+    cursor->coluna = pres_line->tamanho;
 }
 
 // Implementando o algoritimo de Knuth Morris Pratt
@@ -936,6 +980,7 @@ void lida_com_texto_ja_escrito()
     char s = 'a';
     console *nome_do_arquivo;
     nome_do_arquivo = (console *)malloc(sizeof(console));
+    build_console(nome_do_arquivo);
 
     printf("Deseja salvar o arquivo atual antes de sair?\n");
     while (s != 's' && s != 'n')
@@ -960,12 +1005,55 @@ void lida_com_texto_ja_escrito()
     }
     free(nome_do_arquivo);
 
-    point_to_master_tail();
-    // limpa a tela
-    while (numero_de_linhas > 1)
-        delete_line();
 
-    free(nome_do_arquivo);
+    point_to_master_tail();
+
+    // full_print();
+    // limpa a tela
+    while (numero_de_linhas > 2){
+        delete_line();
+        full_print();
+    }
+    delete_line();
+}
+
+void le_um_documento(console* cons){
+    char* file_name; FILE* arq;
+
+    if (head_line == NULL){
+        printf("Não há nada para salvar\n");
+        return;
+    }
+    file_name = (char*)malloc((cons->tamanho)*sizeof(char));
+
+    // printf("cons_input->letras = %s\n", cons_input->letras);
+
+    snprintf(file_name, cons->tamanho, "%s", cons->letras);
+
+    file_name[cons->tamanho] = '\0';
+
+    // printf("file_name = %s\n", file_name);
+
+    arq = fopen(file_name, "r");
+    if (arq == NULL){
+        printf("Erro ao abrir o arquivo\n");
+        return;
+    }
+
+    char ch;
+    point_to_master_head();
+
+    do {
+        ch = fgetc(arq);
+
+        if(ch == '\n')
+            insert_line_em_baixo();
+        else
+            insert_char_a_direita(ch);
+    } while(ch != EOF);
+    
+    fclose(arq);
+    free(file_name);
 }
 
 void move_cursor_to_line(console *cons)
@@ -1066,25 +1154,52 @@ int parse(console *cons)
             escreve_arquivo(cons);
             break;
         case 'A': // abre um arquivo
-            if (head_line->head->next != NULL)
-                ;
+            if (head_line->head->next != NULL);
             lida_com_texto_ja_escrito();
+            le_um_documento(cons);
             break;
         case 'D':
             if (cons->letras[0] == 'L')
             {
-                delete_line();
                 delete_char_console(cons, 0);
+                if (!check_vec(c, lista_f_come_string,
+                               NUM_FUNCOES_COMEM_STRING))
+                {
+                    iteradas = number_no_console(cons);
+                    while (isdigit(cons->letras[0]))
+                        delete_char_console(cons, 0);
+                    if (iteradas == 0)
+                        iteradas = 1;
+                }
+
+                while (iteradas > 0)
+                {
+                    delete_line();
+                    iteradas--;
+                }
                 break;
             }
 
             if (cons->letras[0] == 'W')
             {
-                delete_word();
                 delete_char_console(cons, 0);
+                if (!check_vec(c, lista_f_come_string,
+                               NUM_FUNCOES_COMEM_STRING))
+                {
+                    iteradas = number_no_console(cons);
+                    while (isdigit(cons->letras[0]))
+                        delete_char_console(cons, 0);
+                    if (iteradas == 0)
+                        iteradas = 1;
+                }
+
+                while (iteradas > 0)
+                {
+                    delete_word();
+                    iteradas--;
+                }
                 break;
             }
-
             while (iteradas > 0)
             {
                 delete_char_a_esquerda();
@@ -1180,6 +1295,7 @@ int main()
 {
     // possibilita usar caracteres
     setlocale(LC_ALL, "pt_BR.UTF-8");
+    SetConsoleOutputCP(65001);
     freopen("CON", "w", stdout);
 
     // cursor = (x,y) da coordenada cursor

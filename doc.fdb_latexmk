@@ -1,6 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1675005982 "c:/Users/55119/Documents/C/editor/doc.tex" "doc.pdf" "doc" 1675005982 0
-  "C:/Users/55119/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1672496881 471003 b20f1ce266e1438e994166665c9aee2e ""
+["pdflatex"] 1675218177 "c:/Users/55119/Documents/C/editor/doc.tex" "doc.pdf" "doc" 1675218178 2
   "C:/Users/55119/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1672496495 23168607 4743bb46eb96d42a23115ccc8b74ee83 ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1233951848 1004 54797486969f23fa377b128694d548df ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1233951848 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -23,11 +22,6 @@
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmsy8.tfm" 1136765053 1120 8b7d695260f3cff42e636090a8002094 ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmtt10.tfm" 1136765053 768 1321e9409b4137d6fb428ac9dc956269 ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/tfm/public/cm/cmtt8.tfm" 1136765053 768 d7b9a2629a0c353102ad947dc9221d49 ""
-  "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1247596667 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
-  "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1247596667 35752 024fb6c41858982481f6968b5fc26508 ""
-  "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1247596667 32722 d7379af29a190c3f453aba36302ff5a9 ""
-  "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1247596666 32362 bc3f3eec7ab7d65fe700963d4017d32c ""
-  "C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb" 1247596667 31099 342ef5a582aacbd3346f3cf4579679fa ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.mkii" 1580390158 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/tex/generic/babel/babel.sty" 1672071977 151218 8947adcfe23774a8b34494ca536618c3 ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/tex/generic/babel/locale/pt/babel-brazilian.tex" 1672071983 339 7976080f9a61f733c8810be52a5b6798 ""
@@ -53,9 +47,9 @@
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/tex/latex/graphics/mathcolor.ltx" 1665067579 3171 1cf0d440b5464e2f034398ce4ef36f75 ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/tex/latex/l3backend/l3backend-pdftex.def" 1666810012 30426 f2fb69fcda4dc35ed0b7dee211bce679 ""
   "C:/Users/55119/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1656236890 56148 51a9a8571c07b9921892ae11063ae853 ""
-  "c:/Users/55119/Documents/C/editor/doc.tex" 1675005980 2714 09c4887e3e8b6506a8272761dd03fdf8 ""
-  "doc.aux" 1675005982 134 1cc80b525d8e22a53d688b44488458d3 "pdflatex"
-  "doc.tex" 1675005980 2714 09c4887e3e8b6506a8272761dd03fdf8 ""
+  "c:/Users/55119/Documents/C/editor/doc.tex" 1675218176 2610 7f62715cbdb125a1518175d28bdbd730 ""
+  "doc.aux" 1675218178 86 03f1c14eff96a53695ca0707289dec2e "pdflatex"
+  "doc.tex" 1675218176 2610 7f62715cbdb125a1518175d28bdbd730 ""
   (generated)
   "doc.aux"
   "doc.log"

@@ -200,6 +200,7 @@ void cursor_baixo()
     if (cursor->cel == NULL)
     {
         printf("Erro: cursor vazio\n");
+        point_to_master_head();
         return;
     }
 
@@ -626,6 +627,39 @@ void insert_line_em_baixo()
         tail_line = tail_line->down;
 }
 
+void conecta_linhas()
+{
+    celula *pos_atual = marca_posicao_atual();
+
+    if (pres_line->down == NULL)
+        return;
+
+    // da nome aos bois
+    linha *below_line = pres_line->down;
+    linha *linha_atual = pres_line;
+    linha *below_below_line = below_line->down;
+    celula *below = below_line->head->next;
+    celula *old_pres_tail = pres_line->tail;
+    celula *old_below_tail = below_line->tail;
+    int old_below_tamanho = below_line->tamanho;
+
+    if (tail_line == below_line)
+        tail_line = pres_line;
+    // conecta as linhas
+    pres_line->tail->next = below;
+    below->prev = old_pres_tail;
+    pres_line->tamanho += old_below_tamanho;
+    pres_line->down = below_below_line;
+    pres_line->tail = old_below_tail;
+    if (below_below_line != NULL)
+        below_below_line->up = linha_atual;
+
+    numero_de_linhas--;
+
+    free(below_line->head);
+    // full_print();
+}
+
 void from_console_to_line(console *cons)
 {
     for (int i = 0; i < cons->tamanho; i++)
@@ -838,6 +872,8 @@ int KMP_busca(console *cons)
 
         if (j == M)
             return i - j;
+        else if (j == M - 1 && i == N - 1 && padrao[j] == texto_i->val)
+            return i - j;
         else if (i < N && padrao[j] != texto_i->val)
         {
             if (j != 0)
@@ -857,17 +893,16 @@ bool mecanismo_de_busca(console *cons)
 {
     int ind_kmp = KMP_busca(cons);
 
-    if (ind_kmp == -1 && pres_line->down == NULL)
-    {
-        printf("Linha de baixo vazia\n");
+    if (ind_kmp == -1)
         return false;
-    }
+
     // anda ate o indice encontrado pelo metodo
     while (ind_kmp > 0)
     {
         cursor_frente();
         ind_kmp--;
     }
+    full_print();
     return true;
 }
 
@@ -885,47 +920,32 @@ void performa_busca(console *cons)
     {
         search_next = mecanismo_de_busca(cons);
 
-        // lidar com caso da ultima celula da linha
-        if (cursor->cel->next == NULL && pres_line->down != NULL)
+        if (search_next == true)
+        {
+            // caso encontre, pergunta se quer continuar a busca
+            printf("Deseja continuar a busca? (s/n) ");
+            char c = getchar();
+            // limpa o buffer
+            fflush(stdin);
+            while (c != 's' && c != 'n')
+                c = getchar();
+            if (c == 'n')
+                break;
+            else // anda uma posicao a frente
+                cursor_frente();
+        }
+
+        // 
+        // if (search_next == false)
+
+        if (search_next == false && pres_line->down != NULL)
         {
             cursor_baixo();
+            // aponta pro inicio da linha
             cursor->cel = pres_line->head->next;
             cursor->coluna = 1;
+            search_next = true;
         }
-
-        // lidar com caso da ultima celula da ultima linha
-        if (cursor->cel->next == NULL && pres_line->down == NULL)
-        {
-            if (cursor->cel->val != cons->letras[0])
-                cursor_traz();
-
-            search_next = false;
-            break;
-        }
-
-        if (search_next == false)
-        {
-            cursor_traz();
-            break;
-        }
-
-        full_print();
-        printf("\n\n");
-
-        printf("Continuar busca? (s/n) ");
-        fflush(stdin); // limpa o buffer de entrada
-        char s;
-        scanf("%c", &s);
-        int d;
-        while ((d = getchar()) != '\n' && d != EOF)
-            ;
-        printf("\n");
-
-        if (s == 'n')
-            search_next = false;
-
-        if (s == 's' && cursor->cel->next != NULL)
-            cursor_frente();
     }
 }
 
@@ -1005,26 +1025,26 @@ void lida_com_texto_ja_escrito()
     }
     free(nome_do_arquivo);
 
-
     point_to_master_tail();
 
     // full_print();
     // limpa a tela
-    while (numero_de_linhas > 2){
+    while (numero_de_linhas > 2)
         delete_line();
-        full_print();
-    }
     delete_line();
 }
 
-void le_um_documento(console* cons){
-    char* file_name; FILE* arq;
+void le_um_documento(console *cons)
+{
+    char *file_name;
+    FILE *arq;
 
-    if (head_line == NULL){
+    if (head_line == NULL)
+    {
         printf("Não há nada para salvar\n");
         return;
     }
-    file_name = (char*)malloc((cons->tamanho)*sizeof(char));
+    file_name = (char *)malloc((cons->tamanho) * sizeof(char));
 
     // printf("cons_input->letras = %s\n", cons_input->letras);
 
@@ -1035,7 +1055,8 @@ void le_um_documento(console* cons){
     // printf("file_name = %s\n", file_name);
 
     arq = fopen(file_name, "r");
-    if (arq == NULL){
+    if (arq == NULL)
+    {
         printf("Erro ao abrir o arquivo\n");
         return;
     }
@@ -1043,17 +1064,23 @@ void le_um_documento(console* cons){
     char ch;
     point_to_master_head();
 
-    do {
+    do
+    {
         ch = fgetc(arq);
 
-        if(ch == '\n')
+        if (ch == '\n')
             insert_line_em_baixo();
-        else
+        else if (ch != EOF)
             insert_char_a_direita(ch);
-    } while(ch != EOF);
-    
+    } while (ch != EOF);
+
     fclose(arq);
     free(file_name);
+
+    delete_line();
+
+    // move cursor pro final do arquivo
+    point_to_master_tail();
 }
 
 void move_cursor_to_line(console *cons)
@@ -1146,6 +1173,13 @@ int parse(console *cons)
                 iteradas--;
             }
             break;
+        case 'U':
+            while (iteradas > 0)
+            {
+                conecta_linhas();
+                iteradas--;
+            }
+            break;
         case 'I':
             if (cons != NULL)
                 from_console_to_line(cons);
@@ -1154,7 +1188,8 @@ int parse(console *cons)
             escreve_arquivo(cons);
             break;
         case 'A': // abre um arquivo
-            if (head_line->head->next != NULL);
+            if (head_line->head->next != NULL)
+                ;
             lida_com_texto_ja_escrito();
             le_um_documento(cons);
             break;

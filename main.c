@@ -164,6 +164,35 @@ void cria_celula_vazia_a_direita()
     }
 }
 
+void point_to_master_head()
+{
+    // while (head_line->up != NULL)
+    //     head_line = head_line->up;
+    // while (head_line->head->prev != NULL)
+    //     head_line->head = head_line->head->prev;
+
+    pres_line = head_line;
+
+    cursor->cel = pres_line->head;
+    cursor->linha = 0;
+    cursor->coluna = 0;
+}
+
+void point_to_master_tail()
+{
+    while (tail_line->down != NULL)
+        tail_line = tail_line->down;
+    while (tail_line->tail->next != NULL)
+        tail_line->tail = tail_line->tail->next;
+
+    pres_line = tail_line;
+
+    cursor->cel = pres_line->tail;
+    cursor->linha = numero_de_linhas - 1;
+    cursor->coluna = pres_line->tamanho;
+}
+
+
 // movimentos do cursor
 void cursor_frente()
 {
@@ -783,34 +812,6 @@ char *console_to_string(console *cons, char *str)
     return str;
 }
 
-void point_to_master_head()
-{
-    // while (head_line->up != NULL)
-    //     head_line = head_line->up;
-    // while (head_line->head->prev != NULL)
-    //     head_line->head = head_line->head->prev;
-
-    pres_line = head_line;
-
-    cursor->cel = pres_line->head;
-    cursor->linha = 0;
-    cursor->coluna = 0;
-}
-
-void point_to_master_tail()
-{
-    while (tail_line->down != NULL)
-        tail_line = tail_line->down;
-    while (tail_line->tail->next != NULL)
-        tail_line->tail = tail_line->tail->next;
-
-    pres_line = tail_line;
-
-    cursor->cel = pres_line->tail;
-    cursor->linha = numero_de_linhas - 1;
-    cursor->coluna = pres_line->tamanho;
-}
-
 // Implementando o algoritimo de Knuth Morris Pratt
 void KMP_prefixo(char *padrao, int M, int *prefixos)
 {
@@ -867,12 +868,13 @@ int KMP_busca(console *cons)
         {
             j++;
             i++;
-            texto_i = texto_i->next;
+            if (texto_i->next != NULL)
+                texto_i = texto_i->next;
+            else
+                break;
         }
 
         if (j == M)
-            return i - j;
-        else if (j == M - 1 && i == N - 1 && padrao[j] == texto_i->val)
             return i - j;
         else if (i < N && padrao[j] != texto_i->val)
         {
@@ -881,7 +883,10 @@ int KMP_busca(console *cons)
             else
             {
                 i++;
-                texto_i = texto_i->next;
+                if (texto_i->next != NULL)
+                    texto_i = texto_i->next;
+                else
+                    break;
             }
         }
     }
@@ -892,7 +897,24 @@ int KMP_busca(console *cons)
 bool mecanismo_de_busca(console *cons)
 {
     int ind_kmp = KMP_busca(cons);
-
+    int n = cons->tamanho;
+    
+    // lida com o caso da string no estar no final da linha
+    if(ind_kmp == -1)
+    {
+        char c = cons->letras[n - 1];
+        celula *aux = pres_line->tail;
+        while (c == aux->val){
+            aux = aux->prev;
+            n--;
+            if(n > 0)
+                c = cons->letras[n - 1];
+            else
+                break;
+        }
+        if(n == 0)
+            ind_kmp = pres_line->tamanho - cons->tamanho + 1;
+    }
     if (ind_kmp == -1)
         return false;
 
@@ -935,8 +957,12 @@ void performa_busca(console *cons)
                 cursor_frente();
         }
 
-        // 
-        // if (search_next == false)
+        if (search_next == false && cursor->cel->next != NULL)
+        {
+            cursor_frente();
+            search_next = true;
+        }
+        // else
 
         if (search_next == false && pres_line->down != NULL)
         {

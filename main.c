@@ -192,7 +192,6 @@ void point_to_master_tail()
     cursor->coluna = pres_line->tamanho;
 }
 
-
 // movimentos do cursor
 void cursor_frente()
 {
@@ -898,23 +897,7 @@ bool mecanismo_de_busca(console *cons)
 {
     int ind_kmp = KMP_busca(cons);
     int n = cons->tamanho;
-    
-    // lida com o caso da string no estar no final da linha
-    if(ind_kmp == -1)
-    {
-        char c = cons->letras[n - 1];
-        celula *aux = pres_line->tail;
-        while (c == aux->val){
-            aux = aux->prev;
-            n--;
-            if(n > 0)
-                c = cons->letras[n - 1];
-            else
-                break;
-        }
-        if(n == 0)
-            ind_kmp = pres_line->tamanho - cons->tamanho + 1;
-    }
+
     if (ind_kmp == -1)
         return false;
 
@@ -932,6 +915,7 @@ void performa_busca(console *cons)
 {
     // primeiro caso comeca a busca a partir do inicio da linha
     point_to_master_head();
+    cursor_frente();
 
     if (cons == NULL)
         return;

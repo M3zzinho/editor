@@ -1,0 +1,479 @@
+\newcommand{\inner}[2]{\langle {#1},{#2}\rangle}
+\newcommand{\wlg}{\textsc{w.l.g.}}
+\renewcommand{\span}{\operatorname{Span}}
+\newcommand{\Spec}{\operatorname{Spec}}
+\newcommand{\CStar}{\ensuremath{C^*}}
+
+\NewDocumentCommand{\Anorm}{m}{\sub{\left\| {#1}\right\|}{A}}
+
+\newcommand{\vs}{\hspace{0.25cm}\textit{vs.}\hspace{0.25cm}}
+
+\newcommand{\restrita}{\upharpoonright}
+
+\usepackage{tikz-cd}
+%----------------
+% Black Tex Magic
+%----------------
+% Provide a way to declare and renew a command in one command
+\newcommand{\neworrenewcommand}[1]{\providecommand{#1}{}\renewcommand{#1}}
+
+\let\Img\Im
+\renewcommand{\Im}{\operatorname{Im}}
+
+% ------------------------
+% Setas
+% ------------------------
+% Se e comente se
+\DeclareMathOperator{\sse}{\hspace{0.25cm}\Leftrightarrow\hspace{0.25cm}}
+
+% Seta dupla longa
+\DeclareRobustCommand\longtwoheadrightarrow{\relbar\joinrel\twoheadrightarrow}
+\newcommand{\longto}{\longrightarrow}
+%\DeclareRobustCommand\longtwoheadleftarrow{\twoheadlefttarrow\joinrel\relbar}
+
+% Implicação lógica
+\newcommand{\To}{\hspace{0.25cm} \Rightarrow \hspace{0.25cm}}
+
+% Funções
+\newcommand{\func}[3]{{#1}\colon {#2} \longrightarrow {#3}}
+
+% Funtores
+\usepackage{rotating}
+\usepackage{scalerel}
+
+% \covfunctor{F}{A}{B}{X}{Y}{Z}{W}{f}{g}{x}{y} =
+% F : A -----→ B
+%     X |----→ Y x
+%     |        | -
+%    f|       g| |
+%     ↓        ↓ ↓
+%     Z |----→ W y
+
+%This is a first attemp with only 7 arguments
+\newcommand{\funtordia}[7]{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		#1: \& {#2} \arrow[rr] \&[1cm]\& {#3} \&   \\
+		\& #5 \arrow[d,"#4"'] \arrow[rr, mapsto] \& \& #1(#5) \arrow[d,"#1(#4)"'] \& #7 \arrow[d,mapsto]\\[5mm]
+		\& #6 \arrow[rr,mapsto]                     \& \& #1(#6)         \& #7\cdot #4
+	\end{tikzcd}
+}
+
+%This is taken from the egreg's answer in the link you posted
+\ExplSyntaxOn
+\NewDocumentCommand{\NewWeirdCommand}{mm}
+{% #1 = command to define, #2 = replacement text
+	\cs_new:Npn #1 ##1
+	{
+		\tl_set:Nn \l__covfun_args_tl { ##1 }
+		#2
+	}
+}
+\NewDocumentCommand{\Arg}{m}
+{
+	\tl_item:Nn \l__covfun_args_tl { #1 }
+}
+
+\tl_new:N \l__covfun_parse_args_tl
+\ExplSyntaxOff
+
+
+%--------------------------
+\NewWeirdCommand{\covfunctor}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		\Arg{1} \colon \& {\Arg{2}} \arrow[rr] \&[1cm]\& {\Arg{3}} \&   \\
+		\& \Arg{4} \arrow[d,"\Arg{8}"'] \arrow[rr, mapsto] \& \& \Arg{5} \arrow[d,"\Arg{9}"'] \& \Arg{10} \arrow[d,mapsto]\\[5mm]
+		\& \Arg{6} \arrow[rr,mapsto]                     \& \& \Arg{7}         \& \Arg{11}
+	\end{tikzcd}
+}
+\NewWeirdCommand{\contfunctor}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		\Arg{1} \colon \& {\Arg{2}} \arrow[rr] \&[1cm]\& {\Arg{3}} \&   \\
+		\& \Arg{4} \arrow[d,"\Arg{8}"'] \arrow[rr, mapsto] \& \& \Arg{5} \& \Arg{11} \\[5mm]
+		\& \Arg{6} \arrow[rr,mapsto]                     \& \& \Arg{7} \arrow[u,"\Arg{9}"']  \& \Arg{10} \arrow[u,mapsto]
+	\end{tikzcd}
+}
+
+% Função
+\NewWeirdCommand{\function}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		{\Arg{1}}: \& {\Arg{2}} \arrow[rr] \& [0.5cm] \& {\Arg{3}} \& {\hphantom{\Arg{1}}} \\
+		\& {\Arg{4}} \arrow[rr, mapsto] \&  \& {\Arg{5}} \&
+	\end{tikzcd}
+}
+
+% Função com inversa
+\NewWeirdCommand{\functionwithinverse}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		{\Arg{1}}: \& {\Arg{2}} \arrow[rr] \& [0.5cm] \& {\Arg{3}} \& {\hphantom{\Arg{1}}} \\
+		           \& {\Arg{4}} \arrow[rr, mapsto] \&  \& {\Arg{5}} \&  \\
+		           \& {\Arg{7}}  \&  \& {\Arg{6}} \arrow[ll, mapsto] \&  \\
+	\end{tikzcd}
+}
+
+% Função
+\NewWeirdCommand{\functioncominversa}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		{\Arg{1}}: \& {\Arg{2}} \arrow[rr] \& [0.5cm] \& {\Arg{3}} \& {\hphantom{\Arg{1}}} \\
+		\& {\Arg{4}} \arrow[rr, mapsto] \&  \& {\Arg{5}} \&\\
+		\& {\Arg{6}}  \&  \&  {\Arg{7}}\arrow[ll, mapsto] \&
+	\end{tikzcd}
+}
+
+
+% Função com uma frescurinha
+\NewWeirdCommand{\functionfrescurinha}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		{\Arg{1}}: \& {\Arg{2}} \arrow[rr,{\Arg{6}}] \& [0.5cm] \& {\Arg{3}} \& {\hphantom{\Arg{1}}} \\
+		\& {\Arg{4}} \arrow[rr, mapsto] \&  \& {\Arg{5}} \&
+	\end{tikzcd}
+}
+
+% Função sem nome
+\NewWeirdCommand{\functionwithoutname}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		 {\Arg{1}} \arrow[rr] \& [0.5cm] \& {\Arg{2}}  \\
+		 {\Arg{3}} \arrow[rr, mapsto] \&  \& {\Arg{4}} 
+	\end{tikzcd}
+}
+
+% Função sem nome
+\NewWeirdCommand{\functionwithoutnamefrescurinha}{%
+	\begin{tikzcd}[row sep={0.22em}, column sep={0.01em}, ampersand replacement=\&]
+		{\Arg{1}} \arrow[rr,{\Arg{5}}] \& [0.5cm] \& {\Arg{2}}  \\
+		{\Arg{3}} \arrow[rr, mapsto] \&  \& {\Arg{4}} 
+	\end{tikzcd}
+}
+
+%----------------------
+% Alternative (by collum)
+%----------------------
+
+\ExplSyntaxOn
+
+% the syntax will be by columns:
+% \describefunctor{F}{\mathcal{C},X,\phi,Y}{\mathcal{D},F(X),F(\phi),F(Y)}[x,F(\phi)(x)]
+% with the last column optional
+
+\NewDocumentCommand{\describefunctor}{mmmo}
+{
+	\IfNoValueTF{#4}
+	{
+		\bool_set_false:N \l__mezzovilla_three_bool
+		\mezzovilla_functor:nnnn { #1 } { #2 } { #3 } { }
+	}
+	{
+		\bool_set_true:N \l__mezzovilla_three_bool
+		\mezzovilla_functor:nnnn { #1 } { #2 } { #3 } { #4 }
+	}
+}
+
+\clist_new:N \l__mezzovilla_functor_one_clist
+\clist_new:N \l__mezzovilla_functor_two_clist
+\clist_new:N \l__mezzovilla_functor_three_clist
+\bool_new:N \l__mezzovilla_three_bool
+
+\cs_new_protected:Nn \mezzovilla_functor:nnnn
+{
+	\clist_set:Nn \l__mezzovilla_functor_one_clist { #2 }
+	\clist_set:Nn \l__mezzovilla_functor_two_clist { #3 }
+	\clist_set:Nn \l__mezzovilla_functor_three_clist { #4 }
+	\begin{tikzcd}[ampersand~replacement=\&]
+		#1\colon \&[-3em]
+		\__mezzovilla_item:nn { one } { 1 } \arrow[r] \&
+		\__mezzovilla_item:nn { two } { 1 }
+		\bool_if:NT \l__mezzovilla_three_bool { \&[-1.5em] }
+		\\[-1.5em]
+		\& \__mezzovilla_item:nn { one } { 2 }
+		\arrow[r,mapsto]
+		\arrow[d,swap,"\__mezzovilla_item:nn { one } { 3 }"]
+		\& \__mezzovilla_item:nn { two } { 2 }
+		\arrow[d,swap,"\__mezzovilla_item:nn { two } { 3 }"]
+		\bool_if:NT \l__mezzovilla_three_bool
+		{ \& \__mezzovilla_item:nn { three } { 1 } \arrow[d,mapsto] }
+		\\
+		\& \__mezzovilla_item:nn { one } { 4 }
+		\arrow[r,mapsto]
+		\& \__mezzovilla_item:nn { two } { 4 }
+		\bool_if:NT \l__mezzovilla_three_bool
+		{ \& \__mezzovilla_item:nn { three } { 4 } }
+	\end{tikzcd}
+}
+
+\cs_new:Nn \__mezzovilla_item:nn
+{
+	\clist_item:cn { l__mezzovilla_functor_#1_clist } { #2 }
+}
+\ExplSyntaxOff
+
+% ------------------------
+% Frescuras
+% ------------------------
+
+% Diagonal
+\newcommand{\diag}{\operatorname{diag}}
+% Trinorma
+\newcommand{\VVVert}{\vert\hspace{-0.02515670552cm}\Vert}
+
+\DeclareMathOperator{\come}{\,\cdot\,}
+
+% Inversa
+\newcommand{\inv}[1]{{#1}^{-1}}
+
+% Conjuntos numéricos
+\DeclareMathOperator{\N}{\mathbb{N}}
+\DeclareMathOperator{\C}{\mathbb{C}}
+\DeclareMathOperator{\Z}{\mathbb{Z}}
+\DeclareMathOperator{\A}{\mathbb{A}}
+\DeclareMathOperator{\Q}{\mathbb{Q}}
+\DeclareMathOperator{\R}{\mathbb{R}}
+\DeclareMathOperator{\K}{\mathbb{K}}
+
+\newcommand{\sen}{\operatorname{sen}}
+%
+\neworrenewcommand{\forall}{\ensuremath{\mathchar"238}\,}
+
+% Conjugação Complexa
+\newcommand{\con}[1]{\overline{#1}}
+
+% Abreviações
+\DeclareMathOperator{\ep}{{\varepsilon}}
+\newcommand{\ind}{\texttt{\textit{ind}}\,}
+\newcommand{\rank}{\texttt{\textit{rank}}\,}
+
+%=================================
+%---------------------------------
+% Desigualdades
+%---------------------------------
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\le}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\ge}{\geqslant}
+%=================================
+
+% Ideal fresco
+\renewcommand{\trianglelefteq}{\trianglelefteqslant}
+\renewcommand{\trianglerighteq}{\trianglerighteqslant}
+
+% Menor ou igual fresco (por favor não use)
+\renewcommand{\preceq}{\preccurlyeq}
+\renewcommand{\succeq}{\succcurlyeq}
+
+% Aviso
+\newcommand{\aviso}{[\textcolor{red}{\textsf{\textbf{Aviso}}}]}
+
+%% Subíndice
+\usepackage{scalerel}
+\newcommand{\sub}[2]{{#1}_{\scaleobj{0.78}{#2}}}
+
+\newcommand{\subindex}[1]{\scaleobj{0.67}{#1}}
+% Quocientes
+\newcommand{\mfrac}[2]{\scaleobj{1.25}{\sfrac{\scaleobj{1}{#1}}{\scaleobj{1.0}{{#2}}}}}
+% Forma diferencial
+\newcommand{\de}[1]{{\operatorname{d}}{#1}}
+
+% ...e...
+\iftagged{BR}{
+    \newcommand{\e}{\hspace{0.25cm}\operatorname{e}\hspace{0.25cm}}
+}{
+    \newcommand{\e}{\hspace{0.25cm}\operatorname{and}\hspace{0.25cm}}
+}
+
+%  Espaçamento bilateral
+\newcommand{\bilateral}[2]{
+    \hspace{#1} {#2} \hspace{#1}
+}
+
+%=================================
+%---------------------------------
+% Integrais
+%---------------------------------
+% Integral de caminhos (sem utilizar pacotes)
+\neworrenewcommand{\ointctrclockwise}[1]{\mathop{\rlap{\ensuremath{\mkern5.5mu\scaleobj{0.8}{\circlearrowright}}}\int_{#1}}}
+
+%---------------------------------
+% Limites de integrações iteradas
+%---------------------------------
+% Duplas
+\neworrenewcommand{\iint}{\int\hspace{-0.225cm}\int}
+\neworrenewcommand{\iintlimits}[4]{\int\limits_{#1}^{#2}\hspace{-0.225cm}\int\limits_{#3}^{#4}}
+% Triplas
+\neworrenewcommand{\iiint}{\int\hspace{-0.225cm}\int\hspace{-0.225cm}\int}
+\neworrenewcommand{\iiintlimits}[6]{\int\limits_{#1}^{#2}\hspace{-0.225cm}\int\limits_{#1}^{#2}\hspace{-0.225cm}\int\limits_{#3}^{#4}}
+%=================================
+
+
+\newcommand{\lin}{\operatorname{lin}}
+\newcommand{\spec}{\operatorname{spec}}
+\newcommand{\op}[1]{\operatorname{#1}}
+\NewDocumentCommand{\SymetricSpace}{ m m }{
+	\hspace{{#2}cm}{#1}\hspace{{#2}cm}
+}
+
+
+%=================================
+%---------------------------------
+% Algumas categorias favoritas
+%---------------------------------
+\newcommand{\Cstar}{\boldsymbol{C^*\text{-}\operatorname{Alg}}}
+\newcommand{\Top}{\boldsymbol{\operatorname{Top}}}
+\newcommand{\CHaus}{\boldsymbol{\operatorname{CHaus}}}
+\newcommand{\LCHaus}{\boldsymbol{\operatorname{LCHaus}}}
+\newcommand{\Ban}{\boldsymbol{{\mathscrbf{B}}{\operatorname{an}}}}
+\newcommand{\BAlg}{\boldsymbol{{\mathscrbf{B}}\text{-}{\operatorname{Alg}}}}
+\newcommand{\Hilb}{\boldsymbol{\operatorname{Hilb}}}
+\newcommand{\Set}{\boldsymbol{\operatorname{Set}}}
+
+% "TeX - Funtores" 
+\newcommand{\Commu}[1]{{#1}^{\textit{\textbf{com}}}}
+\newcommand{\Unital}[1]{{#1}_{\textit{\textbf{u}}}}
+\newcommand{\CstarCom}{\Commu{\Cstar}}
+\newcommand{\CstarU}{\Unital{\Cstar}}
+\newcommand{\CstarUOver}[1]{{{\CstarU}{\boldsymbol{(#1)}}}}
+\newcommand{\CstarOver}[1]{{{\Cstar}{\boldsymbol{(#1)}}}}
+% Algébricas
+\newcommand{\Grp}{\boldsymbol{\operatorname{Grp}}}
+\newcommand{\Ab}[1]{\boldsymbol{\operatorname{{#1}Ab}}}
+\newcommand{\SemiGrp}{\boldsymbol{\operatorname{Sem\Grp}}}
+\newcommand{\Mon}{\boldsymbol{\operatorname{Mon}}}
+
+% Categoria Genérica
+\newcommand{\cat}[1]{\ensuremath{\boldsymbol{\mathcal{{#1}}}}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Ob}{\operatorname{Ob}}
+%=================================
+
+%=================================
+%---------------------------------
+% Letras frescas
+%---------------------------------
+% Ajustar a posição do χ (chi)
+\renewcommand{\chi}{\ensuremath\raisebox{\depth}{$\mathchar"11F$}}
+% Ajustar a posição do ℘ (P fresco)
+\renewcommand{\wp}{\ensuremath\raisebox{\depth}{$\mathchar"17D$}}
+% Ajustar a posição do ι (iota)
+\let\auxiota\iota
+\renewcommand{\iota}{\ensuremath\raisebox{\depth}{$\auxiota$}}
+
+% Bold Gamma
+\newcommand{\GGamma}{\text{\reflectbox{\rotatebox[origin=c]{180}{$\mathbb L$}}}}
+
+% Bold LLambda
+\newcommand{\LLambda}{\text{\reflectbox{\rotatebox[origin=c]{180}{\reflectbox{$\mathbb V$}}}}}
+\newcommand{\Eexists}{\text{\reflectbox{$\mathbb E$}}}
+
+% Bold Nabla
+\newcommand{\NNabla}{\text{\reflectbox{\rotatebox[origin=c]{180}{$\DDelta$}}}}
+
+% Bold Delta
+\newcommand{\DDelta}{
+	\scaleobj{1}{
+		\mathrlap{\Delta \hspace{0.105cm}}{
+			\begin{tikzpicture}
+				\draw (0,0) -- (0,0.000001);
+				\draw  (0.0582,0.01 - 0.003) -- 
+				(0.0582+0.31*0.31779334981768276,
+				0.31*0.6237045669318574- 0.003);
+			\end{tikzpicture}\hspace{0.105cm}
+		}
+	}
+}
+
+% Variação de gamma
+\usepackage{tipa}
+\newcommand{\vargamma}{\ensuremath{\scaleobj{1.2}{\text{\textramshorns}}}}
+%=================================
+
+% Small matrix
+\newenvironment{inlinematrix}
+{\left(\begin{smallmatrix}}
+	{\end{smallmatrix}\right)}
+
+% Double parenthesis
+\neworrenewcommand{\llparenthesis}{(\hspace{-0.22cm}(\,}
+\neworrenewcommand{\rrparenthesis}{\,)\hspace{-0.22cm})}
+
+% GL
+\newcommand{\GL}{\operatorname{GL}}
+
+% Avaliação
+\newcommand{\ev}{\boldsymbol{\operatorname{ev}}}
+\newcommand{\eva}[1]{\sub\ev{#1}}
+
+% Álgebra
+\newcommand{\coker}{\operatorname{coker}}
+
+\NewDocumentCommand{\perm}{m}{
+	\def\a{#1}
+	\pgfmathtruncatemacro{\b}{\a-1}
+	(\pgfmathparse{\PermInputs[0]}\pgfmathresult\foreach \i in {1,...,\b}{
+		\hspace{0.2cm}\pgfmathparse{\PermInputs[\i]}\pgfmathresult
+	})
+}
+
+\newcommand{\coord}[2]{
+    \ensuremath{\left(\sub{#1}{1},\ldots, {#1}_{#2}\right)}
+}
+
+% Equivalêncis
+\newcommand{\simx}[1]{\overset{{#1}}{\sim}}
+
+% Núcleo Fibrado
+\newcommand{\Ker}{\operatorname{Ker}}
+
+% Identidade
+\newcommand{\Id}{\textsl{I}}
+
+% Operadores adjuntaveis
+\newcommand{\adj}{\mathscr L}
+
+
+%---------------------------------
+% PGF Plot Functions
+%---------------------------------
+\usepackage{pgfplots}
+\pgfmathdeclarefunction{gauss}{2}{%
+	\pgfmathparse{1/(*#2sqrt(2*pi))*exp(-((x-#1)^2)/(2*#2^2))}%
+}
+
+\pgfmathdeclarefunction{gauss3d}{3}{
+	\pgfmathparse{(1/(#3*sqrt(2*pi)))^2*exp(-((x-#1)^2+(y-#2)^2)/(2*#3^2))}
+}
+%---------------------------------
+
+\usepackage{xparse}
+\NewDocumentEnvironment{eqspaced*}{om}{
+	\[
+	\hphantom{\hspace{\IfNoValueTF{#1}{1cm}{#1}}#2}}
+{
+	\hspace{\IfNoValueTF{#1}{1cm}{#1}}#2
+	\]\ignorespaces
+}
+
+\NewDocumentEnvironment{eqspaced}{om}{
+	\begin{equation}
+		\hphantom{\hspace{\IfNoValueTF{#1}{1cm}{#1}}#2}
+	}{
+		\hspace{\IfNoValueTF{#1}{1cm}{#1}}#2
+	\end{equation}\ignorespaces
+}
+
+
+
+\let\|\Vert
+
+
+%-----------------------
+%Important theorems
+
+\def\StoneWeierstrass{
+\begin{invocacao}[Complex Stone-Weierstra\ss - \cite{simmons1963introduction} - Theorem 36.B]\label{teo: stone-weierstrass}
+    \iftagged{BR}{Seja $X$ um espaço Hausdorff compacto, seja $A$ uma subálgebra de $C(X)$ invariante pelo complexo conjugado e contendo as funções constantes. Se $A$ separa pontos, então $A$ é densa em $C(X)$.}{
+    Let $X\in \CHaus$ and $A \subset C(X)$ a closed $*$-subalgebra containing all the constant functions. Therefore $A$ is dense if and only if separates points\footnote{For any $x,y\in A$ distinct, there exists $g\in A$ such that $g(x)\neq g(y)$.}.
+    }
+\end{invocacao}
+}
+
+
+\newcommand{\HA}{\ensuremath{\mathscr H_A}}
+
+\neworrenewcommand{\mathbf}[1]{\ensuremath{\boldsymbol{#1}}}

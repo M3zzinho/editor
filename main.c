@@ -8,13 +8,15 @@
 #include <windows.h>
 
 #define cap_local 1024
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 
 // funcoes implementadas
-#define NUM_FUNCOES 20
+#define NUM_FUNCOES 22
 char lista_f[NUM_FUNCOES] = {
     'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
     'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
-    'H', ':', 'A', 'E'};
+    'H', ':', 'A', 'E', 'U', 'S'};
 
 #define NUM_FUNCOES_COMEM_STRING 6
 char lista_f_come_string[NUM_FUNCOES_COMEM_STRING] = {
@@ -1129,7 +1131,7 @@ void le_um_documento(console *cons)
 
 void move_cursor_to_line(console *cons)
 {
-    int x, abs_dist; // linha to go
+    int x, abs_dist, head_dist, tail_dist; 
     char d = cons->letras[0];
 
     if (d == '0')
@@ -1138,19 +1140,29 @@ void move_cursor_to_line(console *cons)
     {
         x = number_no_console(cons);
 
-        // distancia entre atual e x
+        // distancias
         abs_dist = abs(x - cursor->linha);
+        head_dist = abs(x);
+        tail_dist = abs(numero_de_linhas - x);
 
-        if (abs_dist == 0)
+        // ve qual referencia eh mais proxima
+        int dist = min(min(head_dist, tail_dist), abs_dist);
+
+        if (dist == head_dist)
+            point_to_master_head();
+        else if (dist == tail_dist)
+            point_to_master_tail();
+    
+        if (dist == 0)
             return;
 
-        while (abs_dist > 0)
+        while (dist> 0)
         {
             if (x > cursor->linha)
                 cursor_baixo();
             else if (x < cursor->linha)
                 cursor_cima();
-            abs_dist--;
+            dist--;
         }
     }
     else if (d == 'F')

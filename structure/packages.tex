@@ -1,0 +1,211 @@
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{etoolbox}
+\iftagged{BR}{
+    \usepackage[brazil]{babel}
+}{
+    \usepackage{babel}
+}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lastpage}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,citecolor=JungleGreen,
+linkcolor=NavyBlue,urlcolor=DarkRed,filecolor=green]{hyperref}
+
+\usepackage{tabularx} % Tabelas com espessura definida
+
+\usepackage{tikz,tikz-cd}
+\usetikzlibrary{patterns,shadows.blur,cd,babel,positioning}
+\usepackage{amsmath, amsfonts, amsthm, amssymb, mathtools}
+\usepackage{fontawesome5}
+
+\usepackage{pdfpages}
+\usepackage{graphicx, wrapfig}
+\usepackage{multicol, multirow}
+\usepackage{enumerate}
+\usepackage[shortlabels]{enumitem}
+
+\newlist{alter}{enumerate}{1}
+\SetLabelAlign{Center}{\hfil#1\hfil}
+\setlist[alter,1]{label=(\textit{\alph*}), align=Center}
+
+%\renewlist{enumerate}{enumerate}{1}
+%\SetLabelAlign{Center}{\hfil#1}
+%\setlist[enumerate,1]{label=\text{\arabic*.}, align=Center}
+
+\newlist{itroman}{enumerate}{1}
+\setlist[itroman,1]{label=\ensuremath{(\roman*)}}
+
+\makeatletter
+\def\namedlabel#1#2{\begingroup
+    #2%
+    \def\@currentlabel{#2}%
+    \phantomsection\label{#1}\endgroup
+}
+\makeatother
+
+%\usepackage{esint}
+\usepackage[makeroom]{cancel}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xfrac}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\usepackage{marvosym}
+\usepackage{float}
+\usetikzlibrary{calc}
+%\usepackage{wasysym}
+%\usepackage{arydshln}
+\usepackage{appendix}
+\usepackage{stmaryrd}
+\usepackage{mathrsfs}
+\usepackage{natbib}
+\usepackage[new]{old-arrows}
+
+% mathscr bold
+\usepackage{mathrsfs}
+\DeclareMathAlphabet{\mathscrbf}{OMS}{mdugm}{b}{n}
+
+\usepackage{fancyvrb}
+\usepackage{listings}
+\lstset{% general command to set parameter(s)
+    basicstyle=\small\ttfamily, % print whole listing small
+    keywordstyle=\color{blue}\bfseries\ttfamily,
+    % underlined bold black keywords
+    identifierstyle=, % nothing happens
+    commentstyle=\color{armygreen}\itshape\ttfamily, % white comments
+    stringstyle=\itshape\ttfamily, % typewriter type for strings
+    numbers=left, 
+    numberstyle=\tiny
+}
+
+
+\usepackage{centernot}
+
+% Use for 0 no prefix. Redefine as needed per-question.
+\newcommand{\writtensection}{0}
+%--------------------------------------
+
+%Hyphenation rules
+%--------------------------------------
+\usepackage{hyphenat,hyperref}
+%\hyphenation{mate-mática recu-perar}
+
+
+\setlist{  
+	listparindent=\parindent,
+	%	parsep=0pt,
+}
+
+\usepackage{url}
+\usepackage{lipsum}
+\usepackage{epigraph}
+\usepackage{transparent}
+%\usepackage[text={}]{draftwatermark}
+
+\usepackage{graphicx}
+\usepackage{mathtools}
+
+%%%%%%%%%%%% Colors
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{armygreen}{rgb}{0.29, 0.33, 0.13}
+\definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6}
+\definecolor{amber(sae/ece)}{rgb}{1.0, 0.49, 0.0}
+\definecolor{aquamarine}{rgb}{0.5, 1.0, 0.83}
+\definecolor{violet}{rgb}{0.56, 0.0, 1.0}
+
+
+\definecolor{arsenic}{rgb}{0.19,0.19,0.19}
+\hypersetup{
+	linkcolor  = blue!75!black,
+	citecolor  = blue!75!black,
+	urlcolor   = violet!45!black,
+	colorlinks = true,
+}
+
+\newtheoremstyle{BRstyle}%
+{4.5pt}% Space above
+{}% Space below 
+{}% Body font
+{}% Indent amount
+{\bfseries}% Theorem head font
+{.}% Punctuation after theorem head
+{.4em}% Space after theorem head 
+{}% Theorem head spec (can be left empty, meaning ‘normal’) %{{\underline{\thmname{#1}\thmnumber{ #2}~\thmnote{(#3)}}}}
+
+\usepackage[framemethod=TikZ]{mdframed}
+
+\surroundwithmdframed[
+  topline=false,
+  rightline=false,
+  bottomline=false,
+  leftmargin=\parindent,
+  skipabove=\medskipamount,
+  skipbelow=\medskipamount
+]{invocacao}
+
+\usepackage{subfiles}
+
+\usepackage{scalerel}
+
+% Corrige a fonte caligráfica
+\usepackage{euscript}
+%\renewcommand{\mathcal}{\EuScript}
+
+\usepackage{setspace}
+
+\theoremstyle{BRstyle}
+\tagged{BR}{
+	\usepackage[brazil]{babel}
+	\usetag{BR}
+}
+
+\newtheorem{exercicio}{\iftagged{BR}{Exercício}{Exercise}}[section]
+\newtheorem{exercicios}[exercicio]{\iftagged{BR}{Exercícios}{Exercises}}
+\newtheorem{teorema}[exercicio]{\iftagged{BR}{Teorema}{Theorem}}
+\newtheorem{teoremas}[exercicio]{\iftagged{BR}{Teoremas}{Theorems}}\newtheorem{definicao}[exercicio]{\iftagged{BR}{Definição}{Definition}}
+\newtheorem{definicoes}[exercicio]{\iftagged{BR}{Definições}{Definitions}}
+\newtheorem{conjectura}[exercicio]{\iftagged{BR}{Conjectura}{Conjecture}}
+\newtheorem{proposicao}[exercicio]{\iftagged{BR}{Proposição}{Proposition}}
+\newtheorem{proposicoes}[exercicio]{\iftagged{BR}{Proposições}{Propositions}}
+\newtheorem{corolario}[exercicio]{\iftagged{BR}{Corolário}{Corollary}}
+\newtheorem{corolarios}[exercicio]{\iftagged{BR}{Corolários}{Corollarys}}
+
+\newtheorem{axioma}[exercicio]{\iftagged{BR}{Axioma}{Axiom}}
+\newtheorem{lema}[exercicio]{\iftagged{BR}{Lema}{Lemma}}
+\newtheorem{lemas}[exercicio]{\iftagged{BR}{Lemas}{Lemmas}}
+\newtheorem{afirmacao}[exercicio]{\iftagged{BR}{Afirmação}{Afirmation}} 
+
+\makeatletter
+    \def\@endtheorem{\hfill\faCoffee \endtrivlist\@endpefalse }
+\makeatother
+\newtheorem{exemplo}[exercicio]{\iftagged{BR}{Exemplo}{Example}}
+\newtheorem{exemplos}[exercicio]{\iftagged{BR}{Exemplos}{Examples}}
+\newtheorem{construcao}[exercicio]{\iftagged{BR}{Construção}{Construction}}
+\newtheorem{observacao}[exercicio]{\textit{\iftagged{BR}{Observação}{Remark}}}
+\newtheorem{notacao}[exercicio]{\iftagged{BR}{Notação}{Notation}}
+\newtheorem{invocacao}[exercicio]{\iftagged{BR}{Invocação}{Summoning}}
+\newtheorem{contraexemplo}[exercicio]{\iftagged{BR}{Contra-exemplo}{Counterexample}}
+\usepackage{catchfilebetweentags}
+
+\usepackage{setspace}
+
+% Cabeçalhos e rodapés antes do corpo do texto
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+% ---------------------------------------------------------------------------- %
+
+% ---------------------------------------------------------------------------- %
+% Cabeçalhos e rodapés no corpo do texto
+\newcommand{\acertacabecalhos}[0]{
+  \fancyhf[lh,rh,ch]{}
+  \fancyhf[leh]{\slshape \nouppercase{\leftmark}}
+  \fancyhf[roh]{\slshape \nouppercase{\rightmark}}
+  \fancyfoot[C]{\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0pt}
+}
+\acertacabecalhos

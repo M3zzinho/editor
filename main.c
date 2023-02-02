@@ -845,8 +845,10 @@ void KMP_prefixo(char *padrao, int M, int *prefixos)
 
 int KMP_busca(console *cons)
 {
+    // tamanho do padrao
     int M = cons->tamanho;
-    int N = pres_line->tamanho - cursor->coluna;
+    // tamanho do texto (dark necessities: add one)
+    int N = pres_line->tamanho - cursor->coluna +1;
     char padrao[M];
 
     for (int i = 0; i < M; i++)
@@ -863,6 +865,8 @@ int KMP_busca(console *cons)
 
     while (i < N)
     {
+        // printf("padrao[%d] = %c, texto_%d->val = %c\n", j, padrao[j], i, texto_i->val);
+
         if (padrao[j] == texto_i->val)
         {
             j++;
@@ -877,6 +881,7 @@ int KMP_busca(console *cons)
             return i - j;
         else if (i < N && padrao[j] != texto_i->val)
         {
+            // printf("i=%d", i);
             if (j != 0)
                 j = prefixos[j - 1];
             else
@@ -889,6 +894,9 @@ int KMP_busca(console *cons)
             }
         }
     }
+
+    if(j==M)
+        return i-j;
 
     return -1;
 }

@@ -7,18 +7,18 @@
 #include <string.h>
 #include <windows.h>
 
+#define NUM_FUNCOES 22
+#define NUM_FUNCOES_COMEM_STRING 6
 #define cap_local 1024
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
 // funcoes implementadas
-#define NUM_FUNCOES 22
 char lista_f[NUM_FUNCOES] = {
     'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
     'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
     'H', ':', 'A', 'E', 'U', 'S'};
 
-#define NUM_FUNCOES_COMEM_STRING 6
 char lista_f_come_string[NUM_FUNCOES_COMEM_STRING] = {
     'I', 'B', 'S', 'E', 'A', ':'};
 
@@ -74,6 +74,7 @@ int numero_de_linhas = 1;
 int tipo_de_cursor = 0;
 int ctrl_c_coluna = 0;
 
+
 // Funcoes do console
 /*****************************/
 void build_console(console *v)
@@ -83,7 +84,7 @@ void build_console(console *v)
 
     if (v->letras == NULL)
     {
-        printf("Erro ao alocar memoria para o console");
+        fprintf(stderr, "Erro ao alocar memoria para o console\n");
         exit(1);
     }
     v->letras[cap_local - 1] = '\0';
@@ -144,7 +145,7 @@ void cria_celula_vazia_a_direita()
     celula *new = (celula *)malloc(sizeof(celula));
     if (new == NULL)
     {
-        printf("Erro ao alocar memoria para a celula\n");
+        fprintf(stderr, "Erro ao alocar memoria para a celula\n");
         exit(1);
     }
 
@@ -199,7 +200,7 @@ void cursor_frente()
 {
     if (cursor->cel == NULL)
     {
-        printf("Erro: cursor vazio\n");
+        fprintf(stderr, "Erro: cursor vazio\n");
         return;
     }
 
@@ -214,7 +215,7 @@ void cursor_traz()
 {
     if (cursor->cel == NULL)
     {
-        printf("Erro: cursor vazio\n");
+        fprintf(stderr, "Erro: cursor vazio\n");
         return;
     }
     if (pres_line->head == NULL ||
@@ -229,7 +230,7 @@ void cursor_baixo()
 {
     if (cursor->cel == NULL)
     {
-        printf("Erro: cursor vazio\n");
+        fprintf(stderr, "Erro: cursor vazio\n");
         point_to_master_head();
         return;
     }
@@ -266,7 +267,7 @@ void cursor_cima()
 {
     if (cursor->cel == NULL)
     {
-        printf("Erro: cursor vazio\n");
+        fprintf(stderr, "Erro: cursor vazio\n");
         return;
     }
     if (pres_line->up == NULL)
@@ -301,7 +302,7 @@ void delete_char_a_esquerda()
     // verifica se o cursor e a lista estao vazios
     if (cursor == NULL || pres_line->head == NULL)
     {
-        printf("Erro: cursor ou lista estao vazios\n");
+        fprintf(stderr, "Erro: cursor ou lista estao vazios\n");
         return;
     }
     celula *old_atual = cursor->cel;
@@ -348,7 +349,7 @@ void delete_line()
     // verifica se o cursor e a lista estao vazios
     if (cursor == NULL || pres_line->head == NULL)
     {
-        printf("Erro: cursor ou lista estao vazios\n");
+        fprintf(stderr, "Erro: cursor ou lista estao vazios\n");
         return;
     }
 
@@ -431,7 +432,7 @@ void delete_word()
     // verifica se o cursor e a lista estao vazios
     if (cursor == NULL || pres_line->head == NULL)
     {
-        printf("Erro: cursor ou lista estao vazios\n");
+        fprintf(stderr, "Erro: cursor ou lista estao vazios\n");
         return;
     }
 
@@ -1384,6 +1385,8 @@ int parse(console *cons)
 
     return 0;
 }
+
+
 
 int main()
 {

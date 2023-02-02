@@ -1,15 +1,14 @@
-\documentclass[a4paper]{article}
-\usepackage[brazil, brazilian]{babel}
-\usepackage{amsmath, amssymb, amsfonts, amsthm}
-\usepackage{xcolor}
+\documentclass[a4paper, 11pt]{article}
+\usepackage{tagging}
+\usetag{BR}
+\input{structure/packages}
+\input{structure/macros}
 
 \title{Documentação}
 \author{Gustavo Pauzner Mezzovilla}
 
 \begin{document}
 \maketitle
-
-Funções implementadas no momento:
 
 $$
 \begin{array}{|c|l|}
@@ -43,4 +42,81 @@ $$
 \end{array}
 $$
 
+\section{Estruturas}
+
+O presente editor de texto considera as seguintes estruturas de dados:
+% \begin{multicols}{2}
+\begin{itemize}%[label = \faCaretSquareRight[regular]]
+	\item \texttt{console}: estrutura responsável por capturar a entrada do usuário, que consistirá de funções e strings.
+
+	\begin{lstlisting}[name=console,
+		language={[ansi]C},
+		frame=trBL,
+		firstnumber=1]
+typedef struct CONSOLE
+{
+    char *letras;
+    int tamanho;
+} console;
+		\end{lstlisting}
+	\item \texttt{celula}: estrutura responsável por armazenar um caractere e ponteiro para as células adjacentes.
+	\begin{lstlisting}[name=console,
+		language={[ansi]C},
+		frame=trBL,
+		firstnumber=1]
+typedef struct CELULA
+{
+	char val;
+	struct CELULA *next;
+	struct CELULA *prev;
+} celula;
+		\end{lstlisting}
+	\item \texttt{linha}: estrutura responsável por armazenar uma linha de texto, que consiste de uma lista duplamente encadeada de células, além de contemplar informações do início e do final da linha, bem como o tamanho da mesma.
+	\begin{lstlisting}[name=console,
+		language={[ansi]C},
+		frame=trBL,
+		firstnumber=1]
+typedef struct LINHA
+{
+	int tamanho;
+	struct CELULA *head;
+	struct CELULA *tail;
+	struct LINHA *up;
+	struct LINHA *down;
+} linha;
+		\end{lstlisting}
+	\item \texttt{ponto}: estrutura da variável global cursor, que consiste de um ponteiro para a célula atual, além de os inteiros especificando sua linha e sua coluna. 
+	\begin{lstlisting}[name=console,
+		language={[ansi]C},
+		frame=trBL,
+		firstnumber=1]
+typedef struct PONTO
+{
+	int linha;
+	int coluna;
+	struct CELULA *cel;
+} ponto;
+		\end{lstlisting}
+\end{itemize}
+% \end{multicols}
+
+As funções implementadas se dividem nas seguintes categorias: As que simplesmente realizam uma ação (como mover o cursor, apagar uma linha, etc.) sem nenhum parâmetro a mais, e as que dependem de um \textit{prompt} de texto como entrada. Portanto, é possível compor as funções que não dependem de entradas de texto, e.g., mover o cursor 3 unidades pra trás, deletar um caracter e inserir outro, como ilustrado abaixo (\ref{list_exemplo_de_composicao}).
+
+\begin{lstlisting}[caption={Exemplo de composição de funções}, label={list_exemplo_de_composicao}language={[ansi]C},firstnumber=1]
+>0|vasa
+      ^
+------------------------
+(0,4): T3DIc
+------------------------
+>0|casa
+   ^
+\end{lstlisting}
+
+A utilização de listas duplamente encadeadas foi considerada para a implementação do editor de texto, pois a inserção e remoção de elementos em uma lista duplamente encadeada é feita em tempo constante, enquanto que em uma lista simplesmente encadeada, a inserção e remoção de elementos é feita em tempo linear. 
+
+Utilizar estruturas diferentes para as células e para listas também foi importante visando a navegabilidade do texto, em conjunto com a performance. O único problema dessa abordagem é no quesito complexidade de código. Dessa forma, a implementação da ferramenta de busca foi mais simplória, donde optou-se por checar desde o início do documento até o final linearmente. Para auxiliar essa abordagem, foi considerado o algorítimo de Knuth-Morris e Pratt, que consiste em um algorítimo de busca de padrões em strings, que possui complexidade de tempo linear no número de caracteres no pior caso.
+
+Esse algorítmo foi desenvolvido para rodar em qualquer sistema operacional, contudo, para utilizar acentos gráficos e caracteres especiais, é necessário que o sistema operacional seja o Windows, de modo que algumas bibliotecas específicas foram consideradas. Contudo, a adaptação do mesmo não deve ser de difícil implementação para outros sistemas operacionais.
+
+Alguns problemas surgiram durante a implementação desse projeto, como a tentativa de utilizar arquivos de cabeçalho para a implementação das funções, o que não foi possível devido a limitações do compilador utilizado. Como a maioria das funções tratavam de variáveis globais, priorizando simplicidade, optou-se por implementar todas as funções em um único arquivo, o que não é uma boa prática de programação, mas foi a melhor solução para o problema.
 \end{document}

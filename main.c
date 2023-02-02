@@ -848,7 +848,7 @@ int KMP_busca(console *cons)
     // tamanho do padrao
     int M = cons->tamanho;
     // tamanho do texto (dark necessities: add one)
-    int N = pres_line->tamanho - cursor->coluna +1;
+    int N = pres_line->tamanho - cursor->coluna + 1;
     char padrao[M];
 
     for (int i = 0; i < M; i++)
@@ -895,8 +895,8 @@ int KMP_busca(console *cons)
         }
     }
 
-    if(j==M)
-        return i-j;
+    if (j == M)
+        return i - j;
 
     return -1;
 }
@@ -919,7 +919,20 @@ bool mecanismo_de_busca(console *cons)
     return true;
 }
 
-void performa_busca(console *cons)
+void substitui(console *old, console *new)
+{
+    // apaga o antigo
+    for (int i = 0; i < old->tamanho; i++)
+    {
+        cursor_frente();
+        delete_char_a_esquerda();
+    }
+    // insere o novo
+    for (int i = 0; i < new->tamanho; i++)
+        insert_char_a_direita(new->letras[i]);
+}
+
+void performa_busca(console *cons, bool substituir)
 {
     // primeiro caso comeca a busca a partir do inicio da linha
     point_to_master_head();
@@ -936,6 +949,18 @@ void performa_busca(console *cons)
 
         if (search_next == true)
         {
+            if (substituir == true)
+            {
+                console *new = (console *)malloc(sizeof(console));
+                build_console(new);
+
+                printf("Substituir por: ");
+                preenche_console(new);
+
+                substitui(cons, new);
+                free(new);
+            }
+
             // caso encontre, pergunta se quer continuar a busca
             printf("Deseja continuar a busca? (s/n) ");
             char c = getchar();
@@ -954,11 +979,12 @@ void performa_busca(console *cons)
             cursor_frente();
             search_next = true;
         }
-        // else
 
         if (search_next == false && pres_line->down != NULL)
         {
             cursor_baixo();
+            while (pres_line->head->next == NULL && pres_line->down != NULL)
+                cursor_baixo();
             // aponta pro inicio da linha
             cursor->cel = pres_line->head->next;
             cursor->coluna = 1;
@@ -1260,7 +1286,10 @@ int parse(console *cons)
             }
             break;
         case 'B':
-            performa_busca(cons);
+            performa_busca(cons, false);
+            break;
+        case 'S':
+            performa_busca(cons, true);
             break;
         case 'F': // move cursor pra cursor_frente
             while (iteradas > 0)

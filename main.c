@@ -1,3 +1,4 @@
+// #include "editor.h" // deu errado...
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -7,13 +8,14 @@
 #include <string.h>
 #include <windows.h>
 
+// definicoes importantes
 #define NUM_FUNCOES 22
 #define NUM_FUNCOES_COMEM_STRING 6
 #define cap_local 1024
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 
-// funcoes implementadas
+// lista de funcoes implementadas
 char lista_f[NUM_FUNCOES] = {
     'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
     'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
@@ -21,6 +23,7 @@ char lista_f[NUM_FUNCOES] = {
 
 char lista_f_come_string[NUM_FUNCOES_COMEM_STRING] = {
     'I', 'B', 'S', 'E', 'A', ':'};
+
 
 bool check_vec(char x, char *lista, int num_funcoes)
 {
@@ -67,12 +70,12 @@ typedef struct PONTO
 
 // Variaveis globais
 ponto *cursor;
-celula *head, *tail, *ctrl_c, *ctrl_x;
+celula *head, *tail;
 linha *pres_line, *head_line, *tail_line;
 
 int numero_de_linhas = 1;
 int tipo_de_cursor = 0;
-int ctrl_c_coluna = 0;
+ponto* ctrl_c;
 
 
 // Funcoes do console
@@ -88,6 +91,13 @@ void build_console(console *v)
         exit(1);
     }
     v->letras[cap_local - 1] = '\0';
+}
+
+void build_ponto(ponto *new)
+{
+    new->linha = 0;
+    new->coluna = 0;
+    new->cel = NULL;
 }
 
 void preenche_console(console *v)
@@ -226,43 +236,6 @@ void cursor_traz()
     cursor->coluna--;
 }
 
-void cursor_baixo()
-{
-    if (cursor->cel == NULL)
-    {
-        fprintf(stderr, "Erro: cursor vazio\n");
-        point_to_master_head();
-        return;
-    }
-
-    if (pres_line->down == NULL)
-        return;
-
-    linha *old_atual = pres_line;
-    linha *old_baixo = pres_line->down;
-
-    pres_line = old_baixo;
-    pres_line->up = old_atual;
-    old_atual->down = pres_line;
-
-    // coloca o cursor na primeira celula da linha
-    cursor->cel = pres_line->head;
-    cursor->linha++;
-    int old_coluna = cursor->coluna;
-    cursor->coluna = 0;
-
-    if (pres_line->head == NULL)
-        cria_celula_vazia_a_direita();
-    celula *aux = cursor->cel;
-
-    while (aux->next != NULL && old_coluna > 0)
-    {
-        aux = aux->next;
-        cursor_frente();
-        old_coluna--;
-    }
-}
-
 void cursor_cima()
 {
     if (cursor->cel == NULL)
@@ -277,27 +250,114 @@ void cursor_cima()
     linha *old_cima = pres_line->up;
 
     pres_line = old_cima;
-    pres_line->down = old_atual;
-    old_atual->up = pres_line;
+    
+    int dist_head, dist_tail;
+    dist_head = abs(cursor->coluna);
+    dist_tail = abs(old_cima->tamanho - cursor->coluna);
 
-    cursor->cel = pres_line->head;
+    // movimenta o cursor para a extremidade mais próxima
+    if (dist_head < dist_tail)
+    {
+        cursor->cel = old_cima->head;
+        cursor->coluna = 0;
+    }
+    else
+    {
+        cursor->cel = old_cima->tail;
+        cursor->coluna = old_cima->tamanho;
+    }
     cursor->linha--;
-
-    int old_coluna = cursor->coluna;
-    cursor->coluna = 0;
 
     if (pres_line->head == NULL)
         cria_celula_vazia_a_direita();
+    
+    int passos = min(dist_head, dist_tail);
+
+    // movimenta o cursor para a coluna desejada
     celula *aux = cursor->cel;
-    while (aux->next != NULL && old_coluna > 0)
+    while (passos > 0)
     {
-        aux = aux->next;
-        cursor_frente();
-        old_coluna--;
+        if (dist_head < dist_tail)
+        {
+            if(aux->next == NULL)
+                break;
+            aux = aux->next;
+            cursor_frente();
+        }
+        else
+        {
+            if(aux->prev == NULL)
+                break;
+            aux = aux->prev;
+            cursor_traz();
+        }
+
+        passos--;
+        // full_print();
     }
 }
 
-void delete_char_a_esquerda()
+void cursor_baixo(){
+    if (cursor->cel == NULL)
+    {
+        fprintf(stderr, "Erro: cursor vazio\n");
+        return;
+    }
+    if (pres_line->down == NULL)
+        return;
+
+    linha *old_atual = pres_line;
+    linha *old_baixo = pres_line->down;
+
+    pres_line = old_baixo;
+    
+    int dist_head, dist_tail;
+    dist_head = abs(cursor->coluna);
+    dist_tail = abs(old_baixo->tamanho - cursor->coluna);
+
+    // movimenta o cursor para a extremidade mais próxima
+    if (dist_head < dist_tail)
+    {
+        cursor->cel = old_baixo->head;
+        cursor->coluna = 0;
+    }
+    else
+    {
+        cursor->cel = old_baixo->tail;
+        cursor->coluna = old_baixo->tamanho;
+    }
+    cursor->linha++;
+
+    if (pres_line->head == NULL)
+        cria_celula_vazia_a_direita();
+    
+    int passos = min(dist_head, dist_tail);
+
+    // movimenta o cursor para a coluna desejada
+    celula *aux = cursor->cel;
+    while (passos > 0)
+    {
+        if (dist_head < dist_tail)
+        {
+            if(aux->next == NULL)
+                break;
+            aux = aux->next;
+            cursor_frente();
+        }
+        else
+        {
+            if(aux->prev == NULL)
+                break;
+            aux = aux->prev;
+            cursor_traz();
+        }
+
+        passos--;
+        // full_print();
+    }
+}
+
+void delete_char()
 {
     // verifica se o cursor e a lista estao vazios
     if (cursor == NULL || pres_line->head == NULL)
@@ -377,7 +437,7 @@ void delete_line()
         celula *aux = cursor->cel;
         while (aux->prev != NULL)
         {
-            delete_char_a_esquerda();
+            delete_char();
             // full_print();
             aux = cursor->cel;
         }
@@ -387,28 +447,15 @@ void delete_line()
 
     if (old_atual == head_line)
     {
-        head_line = proxima;
-        cursor_baixo();
-        pres_line->up = NULL;
-        pres_line->down = proxima->down;
-        pres_line = proxima;
-        pres_line->head = proxima->head;
-        pres_line->tail = proxima->tail;
-        pres_line->tamanho = proxima->tamanho;
-
-        (proxima->up)->down = pres_line;
+        head_line = proxima;        
+        head_line->up = NULL;
+        point_to_master_head();
     }
     else if (old_atual == tail_line)
     {
         tail_line = anterior;
-        cursor_cima();
-        pres_line->down = NULL;
-        pres_line->up = anterior->up;
-        pres_line->head = anterior->head;
-        pres_line->tail = anterior->tail;
-        pres_line->tamanho = anterior->tamanho;
-
-        // (anterior->down)->up = pres_line;
+        tail_line->down = NULL;
+        point_to_master_tail();
     }
     else
     {
@@ -439,7 +486,7 @@ void delete_word()
     while (cursor->cel->val != ' ' &&
            cursor->cel->prev != NULL)
     {
-        delete_char_a_esquerda();
+        delete_char();
         pres_line->tamanho--;
     }
 }
@@ -660,8 +707,6 @@ void insert_line_em_baixo()
 
 void conecta_linhas()
 {
-    celula *pos_atual = marca_posicao_atual();
-
     if (pres_line->down == NULL)
         return;
 
@@ -729,47 +774,65 @@ void move_cursor_prev_palavra()
             cursor_traz();
 }
 
-int copia_memoria()
+void copia_memoria()
 {
+    build_ponto(ctrl_c);
+
     if (cursor->cel == NULL)
-        return 0;
-    ctrl_c = cursor->cel;
-    return cursor->coluna;
+        return;
+
+    int lin = cursor->linha;
+    int col = cursor->coluna;
+    char c = cursor->cel->val;
+
+    ctrl_c->cel = cursor->cel;
+    ctrl_c->linha = lin;
+    ctrl_c->coluna = col;
+    ctrl_c->cel->val = c;
 }
 
 void cola_memoria()
 {
     if (ctrl_c == NULL)
         return;
-    insert_char_a_direita(ctrl_c->val);
+
+    if(ctrl_c->cel == NULL)
+        return;
+        
+    insert_char_a_direita(ctrl_c->cel->val);
+    // build_ponto(ctrl_c);
 }
 
 void recorta_memoria()
 {
+    if (ctrl_c->cel == NULL)
+        return;
+
     if (cursor->cel == NULL)
         return;
 
-    celula *atual = cursor->cel;
-    int atual_coluna = cursor->coluna;
+    ponto *atual = cursor;
 
     if (ctrl_c == NULL)
         return;
+
     // aponta o cursor pra poder deletar
-    cursor->cel = ctrl_c;
+    cursor = ctrl_c;
     char d = cursor->cel->val;
 
-    delete_char_a_esquerda();
+    delete_char();
 
-    cursor->cel = atual;
+    cursor = atual;
 
     // atualiza a coluna do cursor (cuidando pro
     // caso da exclusao estar antes ou depois do
     // cursor)
-    cursor->coluna = atual_coluna;
-    if (atual_coluna > ctrl_c_coluna)
+    if (atual->coluna > ctrl_c->coluna)
         cursor->coluna--;
 
     insert_char_a_direita(d);
+    
+    // build_ponto(ctrl_c);
 }
 
 int tamanho_da_linha()
@@ -788,9 +851,8 @@ char *line_to_string(linha *l)
 {
     int n = l->tamanho;
     // printf("n = %d\n", n);
-    char *str;
-    str = (char *)malloc(n * sizeof(char));
-    memset(str, '\0', sizeof(str));
+    char *str = (char *) malloc(n * sizeof(char));
+    memset(str, '\0', n * sizeof(char));
 
     celula *aux = l->head;
 
@@ -907,7 +969,6 @@ int KMP_busca(console *cons)
 bool mecanismo_de_busca(console *cons)
 {
     int ind_kmp = KMP_busca(cons);
-    int n = cons->tamanho;
 
     if (ind_kmp == -1)
         return false;
@@ -928,7 +989,7 @@ void substitui(console *old, console *new)
     for (int i = 0; i < old->tamanho; i++)
     {
         cursor_frente();
-        delete_char_a_esquerda();
+        delete_char();
     }
     // insere o novo
     for (int i = 0; i < new->tamanho; i++)
@@ -1134,7 +1195,7 @@ void move_cursor_to_line(console *cons)
 {
     int x, abs_dist, head_dist, tail_dist; 
     char d = cons->letras[0];
-
+    
     if (d == '0')
         point_to_master_head();
     else if (isdigit(d) == 1)
@@ -1174,6 +1235,10 @@ void move_cursor_to_line(console *cons)
         cursor->coluna = 0;
         cursor->linha = numero_de_linhas - 1;
     }
+
+    // deleta os numeros do console
+    while (isdigit(cons->letras[0]))
+        delete_char_console(cons, 0);
 }
 
 int parse(console *cons)
@@ -1294,7 +1359,7 @@ int parse(console *cons)
             }
             while (iteradas > 0)
             {
-                delete_char_a_esquerda();
+                delete_char();
                 iteradas--;
             }
             break;
@@ -1349,7 +1414,7 @@ int parse(console *cons)
             }
             break;
         case 'C':
-            ctrl_c_coluna = copia_memoria();
+            copia_memoria();
             break;
         case 'V':
             while (iteradas > 0)
@@ -1395,10 +1460,11 @@ int main()
     SetConsoleOutputCP(65001);
     freopen("CON", "w", stdout);
 
-    // cursor = (x,y) da coordenada cursor
     cursor = (ponto *)malloc(sizeof(ponto));
-    cursor->linha = 0;
-    cursor->coluna = 0;
+    build_ponto(cursor);
+
+    ctrl_c = (ponto *)malloc(sizeof(ponto));
+    build_ponto(ctrl_c);
 
     // linhas principais
     head_line = (linha *)malloc(sizeof(linha));

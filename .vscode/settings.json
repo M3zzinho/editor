@@ -1,0 +1,27 @@
+{
+	"files.associations": {
+		"stdbool.h": "c",
+		"string.h": "c"
+	},
+	"cSpell.words": [
+		"algoritimo",
+		"caractere",
+		"CELULA",
+		"comeca",
+		"deleta",
+		"deletar",
+		"estao",
+		"exclusao",
+		"expurios",
+		"Funcoes",
+		"indice",
+		"metodo",
+		"necessarias",
+		"numeros",
+		"padrao",
+		"performa",
+		"posicao",
+		"reseta",
+		"Variaveis"
+	]
+}

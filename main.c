@@ -985,6 +985,7 @@ bool mecanismo_de_busca(console *cons)
 
 void substitui(console *old, console *new)
 {
+    cursor_traz();
     // apaga o antigo
     for (int i = 0; i < old->tamanho; i++)
     {
@@ -1007,12 +1008,29 @@ void performa_busca(console *cons, bool substituir)
 
     bool search_next = true;
 
+    bool old_substituir = substituir;
+
     while (search_next == true)
     {
         search_next = mecanismo_de_busca(cons);
 
         if (search_next == true)
         {
+            // caso encontre, pergunta se quer substituir
+            if (substituir == true)
+            {
+                printf("Deseja substituir? [s/n] ");
+                char c = getchar();
+                // limpa o buffer
+                fflush(stdin);
+                while (c != 's' && c != 'n')
+                    c = getchar();
+                if (c == 's')
+                    substituir = true;
+                else
+                    substituir = false;
+            }
+
             if (substituir == true)
             {
                 console *new = (console *)malloc(sizeof(console));
@@ -1023,10 +1041,13 @@ void performa_busca(console *cons, bool substituir)
 
                 substitui(cons, new);
                 free(new);
+
+                printf("\n");
+                full_print();
             }
 
             // caso encontre, pergunta se quer continuar a busca
-            printf("Deseja continuar a busca? (s/n) ");
+            printf("Deseja continuar a busca? [s/n] ");
             char c = getchar();
             // limpa o buffer
             fflush(stdin);
@@ -1054,6 +1075,8 @@ void performa_busca(console *cons, bool substituir)
             cursor->coluna = 1;
             search_next = true;
         }
+
+        substituir = old_substituir;
     }
 }
 
@@ -1105,21 +1128,21 @@ void escreve_arquivo(console *cons_input)
 
 void lida_com_texto_ja_escrito()
 {
-    char s = 'a';
+    char s = 'n';
     console *nome_do_arquivo;
     nome_do_arquivo = (console *)malloc(sizeof(console));
     build_console(nome_do_arquivo);
 
-    printf("Deseja salvar o arquivo atual antes de sair?\n");
-    while (s != 's' && s != 'n')
-    {
-        printf("[s] salvar [n] sair sem salvar: ");
+    printf("Deseja salvar o arquivo atual antes de sair? [s/n] ");
+    do {
+        if(s != 's' && s != 'n')
+            printf("Digite [s] ou [n] para continuar: ");
         fflush(stdin); // limpa o buffer de entrada
         scanf("%c", &s);
         int d;
         while ((d = getchar()) != '\n' && d != EOF)
             ;
-    }
+    } while (s != 's' && s != 'n');
 
     if (s == 's')
     {

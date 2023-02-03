@@ -1,6 +1,9 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \usepackage{etoolbox}
+\usepackage{textcomp}
+
+\setlength{\headheight}{13.59999pt}
 \iftagged{BR}{
     \usepackage[brazil]{babel}
 }{
@@ -200,7 +203,7 @@ linkcolor=NavyBlue,urlcolor=DarkRed,filecolor=green]{hyperref}
 
 % ---------------------------------------------------------------------------- %
 % Cabeçalhos e rodapés no corpo do texto
-\newcommand{\acertacabecalhos}[0]{
+\newcommand{\acertacabecalhos}{
   \fancyhf[lh,rh,ch]{}
   \fancyhf[leh]{\slshape \nouppercase{\leftmark}}
   \fancyhf[roh]{\slshape \nouppercase{\rightmark}}

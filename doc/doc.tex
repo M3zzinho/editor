@@ -16,37 +16,39 @@
 	Este é a documentação de um projeto de avaliação da disciplina \textsc{MAC0122}: Princípios de Desenvolvimentos de Algoritmos, ministrada pelo Professor Dr. Denis Deratani Mauá, docente do Departamento de Ciência da Computação do Instituto de Matemática e Estatística da Universidade de São Paulo (IME-USP). 
 \end{abstract}
 
-$$
-\begin{array}{|c|l|}
-\hline \text {I}s & \text { Insere a string } s \text { na posição atual do texto } \\
-\texttt {A}s & \text { Carrega o conteúdo do arquivo de texto de nome } s \text { no editor } \\
-\texttt{E}s & \text { (Sobre)escreve o conteúdo do editor no arquivo de texto de nome } s \\
-\texttt{ F } & \text { Move o cursor um carácter à frente } \\
-\texttt{ T } & \text { Move o cursor um carácter para trás } \\
-\texttt{O} & \text { Move o cursor para o início da linha atual } \\
-\texttt{P} & \text { Move cursor para início da próxima palavra (dentro da mesma linha) } \\
-\texttt{ Q } & \text { Move cursor para início da palavra atual } \\
-\$ & \text { Move o cursor para o fim da linha atual } \\
-\texttt{ J } & \text { Ir para próxima linha (mantém a mesma coluna, ou a mais próxima dela) } \\
-\texttt{ H } & \text { Ir para a linha anterior (manter a mesma coluna, ou a mais próxima dela) } \\
-\texttt{:}x & \text { Move o cursor para o início da linha } x \\
-\texttt{:F} & \text { Move o cursor para a última linha do arquivo } \\
-\texttt{D} & \text { Apaga o carácter da posição atual } \\
-\texttt{DW} & \text { Apaga a palavra em que o cursor se encontra } \\
-\texttt{DL} & \text { Deleta a linha atual } \\
-%\text {M} & \text { Marca (lembra) a posição atual do cursor } \\
-\texttt{ C } & \text { Copia valor da célula na posição atual } \\
-\texttt{ V } & \text { Cola o valor da célula copiada na posição atual  } \\
-\texttt{ X } & \text { Recorta o valor da célula copiada na posição atual } \\
-\texttt{B}s & \text { Busca pela próxima ocorrência do padrão } s \text { no texto } \\
-\texttt{S}s/r & \text { Substitui toda ocorrência de } s \text { por } r \text { no texto a partir da posição atual } \\
-\texttt{ N } & \text { Separa linha atual na posição do cursor } \\
-\texttt{ U } & \text { Unir linha atual e a próxima } \\
-\texttt{!} & \text { Encerra o programa } \\
-%\text { Z } & \text { Exibe a pilha de memória, começando pelo topo. } \\
-\hline
-\end{array}
-$$
+\begin{table}[H]
+      \centering
+      \begin{tabularx}{\linewidth}{|c|X|}
+      \hline \texttt {I}$s$ & Insere a string $s$ na posição atual do texto  \\
+      \texttt {A}s &  Carrega o conteúdo do arquivo de texto $s$ no editor \\
+      \texttt{E}s &  (Sobre)escreve o conteúdo do editor no arquivo de texto $s$ \\
+      \texttt{ F } &  Move o cursor um carácter à frente \\
+      \texttt{ T } &  Move o cursor um carácter para trás \\
+      \texttt{O} &  Move o cursor para o início da linha atual \\
+      \texttt{P} &  Move cursor para início da próxima palavra (dentro da mesma linha) \\
+      \texttt{ Q } &  Move cursor para início da palavra atual \\
+      \$ &  Move o cursor para o fim da linha atual \\
+      \texttt{ J } &  Ir para próxima linha (mantém a mesma coluna, ou a mais próxima dela) \\
+      \texttt{ H } &  Ir para a linha anterior (manter a mesma coluna, ou a mais próxima dela) \\
+      \texttt{:}x &  Move o cursor para o início da linha $x$ \\
+      \texttt{:F} &  Move o cursor para a última linha do arquivo\\
+      \texttt{D} &  Apaga o carácter da posição atual\\
+      \texttt{DW} &  Apaga a palavra em que o cursor se encontra\\
+      \texttt{DL} &  Deleta a linha atual\\
+      %M} &  Marca (lembra) a posição atual do cursor\\
+      \texttt{ C } &  Copia valor da célula na posição atual\\
+      \texttt{ V } &  Cola o valor da célula copiada na posição atual \\
+      \texttt{ X } &  Recorta o valor da célula copiada na posição atual\\
+      \texttt{B}s &  Busca pela próxima ocorrência do padrão $s$ no texto\\
+      \texttt{S}s/r &  Substitui toda ocorrência de $s$ por $r$ no texto a partir da posição atual\\
+      \texttt{ N } &  Separa linha atual na posição do cursor\\
+      \texttt{ U } &  Unir linha atual e a próxima \\
+      \texttt{!} &  Encerra o programa \\
+      % Z } &  Exibe a pilha de memória, começando pelo topo.
+      \hline
+      \end{tabularx}
+      \caption*{Resumo das funções implementadas}
+\end{table}
 
 \tableofcontents
 
@@ -103,9 +105,15 @@ typedef struct PONTO {
 \end{itemize}
 
 As funções implementadas se dividem nas seguintes categorias: As que simplesmente realizam uma ação (como mover o cursor, apagar uma linha, etc.) sem nenhum parâmetro a mais, e as que dependem de um \textit{prompt} de texto como entrada. Portanto, é possível compor as funções que não dependem de entradas de texto, e.g., mover o cursor 3 unidades pra trás, deletar um caracter e inserir outro, como ilustrado abaixo (\ref{list_exemplo_de_composicao}).
-\newpage
+% \newpage
 
-\begin{lstlisting}[caption={Exemplo de composição de funções}, label={list_exemplo_de_composicao}, language={[ansi]C},firstnumber=1]
+\begin{center}
+      \begin{minipage}{0.45\linewidth}
+            \begin{lstlisting}[
+                  caption={Exemplo de composição de funções}, 
+                  label={list_exemplo_de_composicao}, 
+                  language={[ansi]C},
+                  firstnumber=1]
 ------------------------
 >0|vasa
       ^
@@ -115,7 +123,9 @@ As funções implementadas se dividem nas seguintes categorias: As que simplesme
 >0|casa
    ^
 ------------------------
-\end{lstlisting}
+            \end{lstlisting}
+      \end{minipage}
+\end{center}
 
 A utilização de listas duplamente encadeadas foi considerada para a implementação do editor de texto, pois a inserção e remoção de elementos em uma lista duplamente encadeada é feita em tempo constante, enquanto que em uma lista simplesmente encadeada, a inserção e remoção de elementos é feita em tempo linear. 
 
@@ -147,7 +157,9 @@ Alguns problemas surgiram durante a implementação desse projeto, como a tentat
 
 A inserção de texto ocorre através da chamada no console do comando $\texttt{I}s$, onde $s$ é uma \textit{string} digitada pelo usuário. A inserção de cada carácter ocorre em tempo constante através da função $\texttt{insert\_char\_a\_direita}$, que recebe um $\texttt{char}$, aloca uma nova célula com seu valor atribuído, e atualiza os ponteiros dos elementos adjacentes.
 
-\begin{lstlisting}[caption={Exemplo de Inserção de funções}, label={list_exemplo_de_insercao}, language={[ansi]C},firstnumber=1]
+\begin{center}
+      \begin{minipage}{0.45\linewidth}
+            \begin{lstlisting}[caption={Exemplo de Inserção de funções}, label={list_exemplo_de_insercao}, language={[ansi]C},firstnumber=1]
 ------------------------
 >0|hello
        ^
@@ -157,13 +169,17 @@ A inserção de texto ocorre através da chamada no console do comando $\texttt{
 >0|hello world
              ^
 ------------------------
-\end{lstlisting}
+            \end{lstlisting}
+      \end{minipage}
+\end{center}
 
 \subsubsection*{Mudar estilo do cursor}
 
 Dado que os cursores de texto mais usuais são comumente indicados por $\texttt{|}$ no meio do texto. Para emular esse comportamento e evitar confusão, ao pressionar \texttt{G}, a representação de \textasciicircum\,\,passa a ser $/\backslash$. Ao pressionar novamente, o cursor retorna ao ser estado anterior.
 
-\begin{lstlisting}
+\begin{center}
+      \begin{minipage}{0.45\linewidth}
+\begin{lstlisting}[caption={Mudança do estilo do cursor}, label={muda_cursor}, language={[ansi]C},firstnumber=1]
 ------------------------
 >0|hello world
              ^
@@ -174,6 +190,8 @@ Dado que os cursores de texto mais usuais são comumente indicados por $\texttt{
              /\
 ------------------------
 \end{lstlisting}
+      \end{minipage}
+\end{center}
 
 \subsection{Escreve/Sobrescreve/Carrega arquivo}
 
@@ -295,6 +313,53 @@ Substituir por: lagartixa
 (0,22): Deseja continuar a busca? [s/n] n
 \end{lstlisting}
 \end{minipage}
+\end{center}
+
+\subsection{Separar/Unir linhas}
+
+\begin{table}[H]
+      \centering
+      \begin{tabularx}{\linewidth}{|c|X|c|}
+      \hline
+      \textbf{Chamada} & \textbf{Descrição} & \textbf{Complexidade}
+      \\ 
+      \hline
+      \texttt{N} & Separa linha atual na posição do cursor. Cria linha nova vazia se não tiver a conteúdo depois do cursor. & $O(1)$ \\
+      \texttt{U} & Unir linha atual e a próxima & $O(1)$ \\
+      \hline
+      \end{tabularx}
+\end{table}
+
+\begin{center}
+      \begin{minipage}[t]{0.45\linewidth}
+            \begin{lstlisting}[caption={Quebra de linha}, label={list_exemplo_de_quebra}, language={[ansi]C},firstnumber=1]
+------------------------
+>0|hello world
+        ^
+------------------------
+(0,6): N
+------------------------
+>0|hello 
+        ^
+ 1|world
+------------------------
+            \end{lstlisting}
+      \end{minipage}
+      \quad
+      \begin{minipage}[t]{0.45\linewidth}
+            \begin{lstlisting}[caption={União de linha}, label={list_exemplo_de_uniao}, language={[ansi]C},firstnumber=1]
+------------------------
+>0|hello
+     ^
+ 1|world
+------------------------
+(0,3): U
+------------------------
+>0|hello world
+     ^
+------------------------
+            \end{lstlisting}
+      \end{minipage}
 \end{center}
 
 \end{document}

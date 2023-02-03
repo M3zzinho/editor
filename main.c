@@ -193,10 +193,10 @@ void point_to_master_head()
 
 void point_to_master_tail()
 {
-    while (tail_line->down != NULL)
-        tail_line = tail_line->down;
-    while (tail_line->tail->next != NULL)
-        tail_line->tail = tail_line->tail->next;
+    // while (tail_line->down != NULL)
+    //     tail_line = tail_line->down;
+    // while (tail_line->tail->next != NULL)
+    //     tail_line->tail = tail_line->tail->next;
 
     pres_line = tail_line;
 
@@ -413,6 +413,7 @@ void delete_line()
         return;
     }
 
+
     linha *old_atual = pres_line;
     linha *anterior, *proxima;
 
@@ -425,6 +426,9 @@ void delete_line()
         proxima = old_atual->down;
     else
         proxima = NULL;
+
+    if(numero_de_linhas != 1)
+        numero_de_linhas--;
 
     if (head_line == tail_line)
     {
@@ -442,6 +446,7 @@ void delete_line()
             aux = cursor->cel;
         }
 
+        point_to_master_head();
         return;
     }
 
@@ -470,8 +475,6 @@ void delete_line()
         proxima->up = pres_line;
     }
     free(old_atual);
-
-    numero_de_linhas--;
 }
 
 void delete_word()

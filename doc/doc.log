@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2022.12.31)  3 FEB 2023 16:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 22.12) (preloaded format=pdflatex 2022.12.31)  3 FEB 2023 20:46
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1191,59 +1191,48 @@ File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 14.
  (C:\Users\55119\AppData\Local\Programs\MiKTeX\tex/latex/lm\ts1lmr.fd
 File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10.95> on input line 19.
-LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 22.
- (C:\Users\55119\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmtt.fd
-File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-Overfull \hbox (45.97362pt too wide) detected at line 49
-[]
- []
+) (C:\Users\55119\AppData\Local\Programs\MiKTeX\tex/latex/lm\t1lmtt.fd) [1
 
-(doc.toc [1
-
-{C:/Users/55119/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}])
+{C:/Users/55119/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] (doc.toc)
 \tf@toc=\write6
 \openout6 = `doc.toc'.
 
- (C:\Users\55119\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
+ [2] (C:\Users\55119\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2020/03/24 1.8d listings language file
 ) (C:\Users\55119\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstmisc.sty
 File: lstmisc.sty 2020/03/24 1.8d (Carsten Heinz)
 )
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 62.
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 64.
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 63.
- [2] [3]
-Overfull \hbox (1.10161pt too wide) in paragraph at lines 126--127
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 65.
+ [3]
+Overfull \hbox (1.10161pt too wide) in paragraph at lines 136--137
 []\T1/lmr/m/n/10.95 Alguns pro-ble-mas sur-gi-ram du-rante a im-ple-men-ta-ção desse pro-jeto, como
  []
 
 [4] [5] [6]
-Underfull \hbox (badness 6493) in paragraph at lines 265--265
+Underfull \hbox (badness 6493) in paragraph at lines 283--283
 []|\T1/lmr/m/n/10.95 Análoga a \T1/lmtt/m/n/10.95 B\T1/lmr/m/n/10.95 , po-rém
  []
 
-[7] 
+[7] [8] 
 AED: lastpage setting LastPage
-[8] (doc.aux)
+[9] (doc.aux)
 Package rerunfilecheck Info: File `doc.out' has not changed.
-(rerunfilecheck)             Checksum: B3342945F36C95990C605A225DE24B3F;1434.
+(rerunfilecheck)             Checksum: 03BC84F56CBE8756B35EBB965CEAC289;1589.
  ) 
 Here is how much of TeX's memory you used:
- 46833 strings out of 476406
- 1049295 string characters out of 2789566
- 1881787 words of memory out of 3000000
- 66223 multiletter control sequences out of 15000+600000
+ 46867 strings out of 476406
+ 1049735 string characters out of 2789566
+ 1885787 words of memory out of 3000000
+ 66231 multiletter control sequences out of 15000+600000
  588707 words of font info for 96 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 89i,17n,93p,789b,2128s stack positions out of 10000i,1000n,20000p,200000b,80000s
+ 89i,17n,93p,789b,1391s stack positions out of 10000i,1000n,20000p,200000b,80000s
 {C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathex.enc}{C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}{C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}<C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmbx12.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmcsc10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmex10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi12.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmmi8.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr12.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr6.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmr8.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmro10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmsy8.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmtt8.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msam10.pfb><C:/Users/55119/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on doc.pdf (8 pages, 409331 bytes).
+Output written on doc.pdf (9 pages, 417704 bytes).
 PDF statistics:
- 325 PDF objects out of 1000 (max. 8388607)
- 101 named destinations out of 1000 (max. 500000)
- 165 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 364 PDF objects out of 1000 (max. 8388607)
+ 127 named destinations out of 1000 (max. 500000)
+ 173 words of extra memory for PDF output out of 10000 (max. 10000000)
 

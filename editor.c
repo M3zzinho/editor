@@ -1,28 +1,9 @@
-// #include "editor.h" // deu errado...
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <math.h>
-#include <locale.h>
-#include <string.h>
-#include <windows.h>
-
-// definicoes importantes
-#define NUM_FUNCOES 22
-#define NUM_FUNCOES_COMEM_STRING 6
-#define cap_local 1024
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#define max(a, b) (((a) > (b)) ? (a) : (b))
+#include "editor.h"
 
 // lista de funcoes implementadas
-char lista_f[NUM_FUNCOES] = {
-    'G', 'I', 'D', 'F', 'T', 'C', 'V', 'X',
-    'O', '$', 'P', 'Q', '!', 'B', 'N', 'J',
-    'H', ':', 'A', 'E', 'U', 'S'};
+extern char lista_f[NUM_FUNCOES];
 
-char lista_f_come_string[NUM_FUNCOES_COMEM_STRING] = {
-    'I', 'B', 'S', 'E', 'A', ':'};
+extern char lista_f_come_string[NUM_FUNCOES_COMEM_STRING];
 
 bool check_vec(char x, char *lista, int num_funcoes)
 {
@@ -37,36 +18,6 @@ bool check_vec(char x, char *lista, int num_funcoes)
     return false;
 }
 
-// Principais estruturas
-typedef struct CONSOLE
-{
-    char *letras;
-    int tamanho;
-} console;
-
-typedef struct CELULA
-{
-    char val;
-    struct CELULA *next;
-    struct CELULA *prev;
-} celula;
-
-typedef struct LINHA
-{
-    int tamanho;
-    struct CELULA *head;
-    struct CELULA *tail;
-    struct LINHA *up;
-    struct LINHA *down;
-} linha;
-
-typedef struct PONTO
-{
-    int linha;
-    int coluna;
-    struct CELULA *cel;
-} ponto;
-
 // Variaveis globais
 ponto *cursor;
 celula *head, *tail;
@@ -75,7 +26,6 @@ linha *pres_line, *head_line, *tail_line;
 int numero_de_linhas = 1;
 int tipo_de_cursor = 0;
 ponto* ctrl_c;
-
 
 // Funcoes do console
 /*****************************/
@@ -92,11 +42,11 @@ void build_console(console *v)
     v->letras[cap_local - 1] = '\0';
 }
 
-void build_ponto(ponto *new)
+void build_ponto(ponto *new_ponto)
 {
-    new->linha = 0;
-    new->coluna = 0;
-    new->cel = NULL;
+    new_ponto->linha = 0;
+    new_ponto->coluna = 0;
+    new_ponto->cel = NULL;
 }
 
 void preenche_console(console *v)
@@ -133,46 +83,46 @@ void delete_char_console(console *cons, int i)
 
 // Funcoes da celula
 /*****************************/
-void build_celula(celula *new)
+void build_celula(celula *new_cel)
 {
-    new->val = '\0';
-    new->next = NULL;
-    new->prev = NULL;
+    new_cel->val = '\0';
+    new_cel->next = NULL;
+    new_cel->prev = NULL;
 }
 
-void build_linha(linha *new)
+void build_linha(linha *new_line)
 {
-    new->tamanho = 0;
-    new->head = NULL;
-    new->tail = NULL;
-    new->up = NULL;
-    new->down = NULL;
+    new_line->tamanho = 0;
+    new_line->head = NULL;
+    new_line->tail = NULL;
+    new_line->up = NULL;
+    new_line->down = NULL;
 }
 
 void cria_celula_vazia_a_direita()
 {
-    celula *new = (celula *)malloc(sizeof(celula));
-    if (new == NULL)
+    celula *new_cel = (celula *)malloc(sizeof(celula));
+    if (new_cel == NULL)
     {
         fprintf(stderr, "Erro ao alocar memoria para a celula\n");
         exit(1);
     }
 
-    build_celula(new);
+    build_celula(new_cel);
 
     if ((cursor->cel)->next != NULL)
     {
         // da nome a proxima celula
         celula *right = (cursor->cel)->next;
-        (cursor->cel)->next = new;
-        new->prev = cursor->cel;
-        new->next = right;
-        right->prev = new;
+        (cursor->cel)->next = new_cel;
+        new_cel->prev = cursor->cel;
+        new_cel->next = right;
+        right->prev = new_cel;
     }
     else
     {
-        (cursor->cel)->next = new;
-        new->prev = cursor->cel;
+        (cursor->cel)->next = new_cel;
+        new_cel->prev = cursor->cel;
     }
 }
 
@@ -245,11 +195,10 @@ void cursor_cima()
     if (pres_line->up == NULL)
         return;
 
-    linha *old_atual = pres_line;
     linha *old_cima = pres_line->up;
 
     pres_line = old_cima;
-    
+
     int dist_head, dist_tail;
     dist_head = abs(cursor->coluna);
     dist_tail = abs(old_cima->tamanho - cursor->coluna);
@@ -269,7 +218,7 @@ void cursor_cima()
 
     if (pres_line->head == NULL)
         cria_celula_vazia_a_direita();
-    
+
     int passos = min(dist_head, dist_tail);
 
     // movimenta o cursor para a coluna desejada
@@ -305,11 +254,10 @@ void cursor_baixo(){
     if (pres_line->down == NULL)
         return;
 
-    linha *old_atual = pres_line;
     linha *old_baixo = pres_line->down;
 
     pres_line = old_baixo;
-    
+
     int dist_head, dist_tail;
     dist_head = abs(cursor->coluna);
     dist_tail = abs(old_baixo->tamanho - cursor->coluna);
@@ -329,7 +277,7 @@ void cursor_baixo(){
 
     if (pres_line->head == NULL)
         cria_celula_vazia_a_direita();
-    
+
     int passos = min(dist_head, dist_tail);
 
     // movimenta o cursor para a coluna desejada
@@ -451,7 +399,7 @@ void delete_line()
 
     if (old_atual == head_line)
     {
-        head_line = proxima;        
+        head_line = proxima;
         head_line->up = NULL;
         point_to_master_head();
     }
@@ -512,10 +460,18 @@ void print_line(linha *v)
     printf("\n");
 }
 
+int power(int base, int exp)
+{
+    int result = 1;
+    for (int i = 0; i < exp; i++)
+        result *= base;
+    return result;
+}
+
 void imprime_cursor()
 {
     int blank = 0;
-    while (numero_de_linhas >= pow(10, blank))
+    while (numero_de_linhas >= power(10, blank))
     {
         blank++;
         printf(" ");
@@ -543,7 +499,7 @@ void print_all_lines()
 
     int blank = 0;
 
-    while (numero_de_linhas >= pow(10, blank))
+    while (numero_de_linhas >= power(10, blank))
         blank++;
 
     while (aux != NULL)
@@ -602,21 +558,21 @@ void insert_char_a_direita(char d)
     // caso o cursor seja vazio
     if (cursor->cel == NULL)
     {
-        celula *new = (celula *)malloc(sizeof(celula));
+        celula *new_cel = (celula *)malloc(sizeof(celula));
 
-        if (new == NULL)
+        if (new_cel == NULL)
         {
             printf("Erro ao alocar memoria para a celula\n");
             exit(1);
         }
 
-        build_celula(new);
+        build_celula(new_cel);
 
         if ((cursor->cel)->next != NULL)
         {
             // da nome a proxima celula
             celula *b = (cursor->cel)->next;
-            b->prev = new;
+            b->prev = new_cel;
         }
     }
 
@@ -800,7 +756,7 @@ void cola_memoria()
 
     if(ctrl_c->cel == NULL)
         return;
-        
+
     insert_char_a_direita(ctrl_c->cel->val);
     // build_ponto(ctrl_c);
 }
@@ -833,7 +789,7 @@ void recorta_memoria()
         cursor->coluna--;
 
     insert_char_a_direita(d);
-    
+
     // build_ponto(ctrl_c);
 }
 
@@ -985,7 +941,7 @@ bool mecanismo_de_busca(console *cons)
     return true;
 }
 
-void substitui(console *old, console *new)
+void substitui(console *old, console *new_cons)
 {
     cursor_traz();
     // apaga o antigo
@@ -995,8 +951,8 @@ void substitui(console *old, console *new)
         delete_char();
     }
     // insere o novo
-    for (int i = 0; i < new->tamanho; i++)
-        insert_char_a_direita(new->letras[i]);
+    for (int i = 0; i < new_cons->tamanho; i++)
+        insert_char_a_direita(new_cons->letras[i]);
 }
 
 void performa_busca(console *cons, bool substituir)
@@ -1035,14 +991,14 @@ void performa_busca(console *cons, bool substituir)
 
             if (substituir == true)
             {
-                console *new = (console *)malloc(sizeof(console));
-                build_console(new);
+                console *new_cons = (console *)malloc(sizeof(console));
+                build_console(new_cons);
 
                 printf("Substituir por: ");
-                preenche_console(new);
+                preenche_console(new_cons);
 
-                substitui(cons, new);
-                free(new);
+                substitui(cons, new_cons);
+                free(new_cons);
 
                 printf("\n");
                 full_print();
@@ -1085,7 +1041,6 @@ void performa_busca(console *cons, bool substituir)
 void escreve_arquivo(console *cons_input)
 {
     // variaveis necessarias pra abrir um arquivo
-    char *file_name;
     FILE *arq;
 
     if (head_line == NULL)
@@ -1093,17 +1048,8 @@ void escreve_arquivo(console *cons_input)
         printf("Nao ha nada para salvar\n");
         return;
     }
-    file_name = (char *)malloc((cons_input->tamanho) * sizeof(char));
 
-    // printf("cons_input->letras = %s\n", cons_input->letras);
-
-    snprintf(file_name, cons_input->tamanho, "%s", cons_input->letras);
-
-    file_name[cons_input->tamanho] = '\0';
-
-    // printf("file_name = %s\n", file_name);
-
-    arq = fopen(file_name, "w");
+    arq = fopen(cons_input->letras, "w");
     if (arq == NULL)
     {
         printf("Erro ao criar o arquivo\n");
@@ -1123,28 +1069,28 @@ void escreve_arquivo(console *cons_input)
         fprintf(arq, "%s\n", aux);
         aux_line = aux_line->down;
     }
-    printf("Arquivo %s salvo com sucesso!\n", file_name);
+    printf("Arquivo %s salvo com sucesso!\n", cons_input->letras);
     fclose(arq);
-    free(file_name);
 }
 
 void lida_com_texto_ja_escrito()
 {
-    char s = 'n';
+    char s;
+    int ret = 0;
     console *nome_do_arquivo;
     nome_do_arquivo = (console *)malloc(sizeof(console));
     build_console(nome_do_arquivo);
 
     printf("Deseja salvar o arquivo atual antes de sair? [s/n] ");
-    do {
-        if(s != 's' && s != 'n')
-            printf("Digite [s] ou [n] para continuar: ");
-        fflush(stdin); // limpa o buffer de entrada
-        scanf("%c", &s);
-        int d;
-        while ((d = getchar()) != '\n' && d != EOF)
-            ;
-    } while (s != 's' && s != 'n');
+    // rode ate que o usuario coloque um input valido
+    while (ret != 1 || (s != 's' && s != 'n'))
+    {
+        ret = scanf("%c", &s);
+        // limpa o buffer
+        fflush(stdin);
+        if (ret != 1)
+            printf("Entrada invalida, tente novamente: ");
+    }
 
     if (s == 's')
     {
@@ -1169,7 +1115,6 @@ void lida_com_texto_ja_escrito()
 
 void le_um_documento(console *cons)
 {
-    char *file_name;
     FILE *arq;
 
     if (head_line == NULL)
@@ -1177,17 +1122,12 @@ void le_um_documento(console *cons)
         printf("Não há nada para salvar\n");
         return;
     }
-    file_name = (char *)malloc((cons->tamanho) * sizeof(char));
 
     // printf("cons_input->letras = %s\n", cons_input->letras);
 
-    snprintf(file_name, cons->tamanho, "%s", cons->letras);
+    printf("file_name = %s\n", cons->letras);
 
-    file_name[cons->tamanho] = '\0';
-
-    // printf("file_name = %s\n", file_name);
-
-    arq = fopen(file_name, "r");
+    arq = fopen(cons->letras, "r");
     if (arq == NULL)
     {
         printf("Erro ao abrir o arquivo\n");
@@ -1208,7 +1148,6 @@ void le_um_documento(console *cons)
     } while (ch != EOF);
 
     fclose(arq);
-    free(file_name);
 
     delete_line();
 
@@ -1218,9 +1157,9 @@ void le_um_documento(console *cons)
 
 void move_cursor_to_line(console *cons)
 {
-    int x, abs_dist, head_dist, tail_dist; 
+    int x, abs_dist, head_dist, tail_dist;
     char d = cons->letras[0];
-    
+
     if (d == '0')
         point_to_master_head();
     else if (isdigit(d) == 1)
@@ -1239,7 +1178,7 @@ void move_cursor_to_line(console *cons)
             point_to_master_head();
         else if (dist == tail_dist)
             point_to_master_tail();
-    
+
         if (dist == 0)
             return;
 
@@ -1271,6 +1210,7 @@ int parse(console *cons)
     // pega o primeiro caractere da string
     char c = cons->letras[0];
     delete_char_console(cons, 0);
+    printf("cons->letras = %s", cons->letras);
 
     // numero de iteracoes de uma dada funcao
     int iteradas = 1;
@@ -1336,8 +1276,7 @@ int parse(console *cons)
             break;
         case 'A': // abre um arquivo
             if (head_line->head->next != NULL)
-                ;
-            lida_com_texto_ja_escrito();
+                lida_com_texto_ja_escrito();
             le_um_documento(cons);
             break;
         case 'D':
@@ -1476,14 +1415,14 @@ int parse(console *cons)
     return 0;
 }
 
-
-
 int main()
 {
     // possibilita usar caracteres
+#ifdef _WIN32
     setlocale(LC_ALL, "pt_BR.UTF-8");
     SetConsoleOutputCP(65001);
     freopen("CON", "w", stdout);
+#endif
 
     cursor = (ponto *)malloc(sizeof(ponto));
     build_ponto(cursor);

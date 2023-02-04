@@ -1,7 +1,8 @@
 {
 	"files.associations": {
 		"stdbool.h": "c",
-		"string.h": "c"
+		"string.h": "c",
+		"structs.h": "c"
 	},
 	"cSpell.words": [
 		"algoritimo",

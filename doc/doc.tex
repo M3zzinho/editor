@@ -133,7 +133,7 @@ Utilizar estruturas diferentes para as células e para listas também foi import
 
 Esse algoritmo foi desenvolvido para rodar em qualquer sistema operacional, contudo, para utilizar acentos gráficos e caracteres especiais, é necessário que o sistema operacional seja o Windows, de modo que algumas bibliotecas específicas foram consideradas. Contudo, a adaptação do mesmo não deve ser de difícil implementação para outros sistemas operacionais.
 
-Alguns problemas surgiram durante a implementação desse projeto, como a tentativa de utilizar arquivos de cabeçalho para a implementação das funções, o que não foi possível devido a limitações do compilador utilizado. Priorizando simplicidade, optou-se por implementar todas as funções em um único arquivo, o que não é uma boa prática de programação, mas foi a melhor solução para o problema.
+Tentou-se dividir o programa em arquivos relacionados a cada uma de suas partes (por exemplo, funções de linha estariam presentes no arquivo "line.c" com um arquivo de cabeçalho respectivo), porém, dado o limite de envio de arquivos temos apenas as funcionalidades de console (manipulação do cursor, das linhas e funcionalidades mais simples relacionadas ao conteúdo) separadas das estruturas comuns (presentes em 'common.c').
 
 
 \section{Descrição das funções}

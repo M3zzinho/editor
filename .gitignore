@@ -1,0 +1,12 @@
+*.exe
+*.o
+*.DS_Store
+*.fls
+*.dSYM
+*.aux
+*.fdb_latexmk
+*.log
+*.synctex.gz
+*.toc
+*.out
+*.xdv
